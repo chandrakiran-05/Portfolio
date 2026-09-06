@@ -1,0 +1,365 @@
+@keyframes marquee {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+
+@keyframes glitchPulse {
+  0% { transform: translate(0); text-shadow: 2px 2px #ff0000; }
+  25% { transform: translate(-3px, 3px); text-shadow: -2px -2px #00ffff; }
+  50% { transform: translate(3px, -3px); text-shadow: 3px -3px #ff00ff; }
+  75% { transform: translate(-2px, -2px); text-shadow: -3px 3px #ffff00; }
+  100% { transform: translate(0); text-shadow: 2px 2px #ff0000; }
+}
+
+.geoCitiesContainer {
+  background-color: #000033;
+  background-image: 
+    radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 40px),
+    radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 30px),
+    radial-gradient(white, rgba(255,255,255,.1) 2px, transparent 40px);
+  background-size: 550px 550px, 350px 350px, 250px 250px;
+  background-position: 0 0, 40px 60px, 130px 270px;
+  color: #00ff00;
+  font-family: 'Times New Roman', Times, serif;
+  padding: 70px 16px 60px 16px;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.netscapeWindow {
+  max-width: 1020px;
+  margin: 0 auto;
+  background: #c0c0c0;
+  border: 3px outset #ffffff;
+  box-shadow: 10px 10px 30px rgba(0, 0, 0, 0.8), 0 0 20px #ff00ff;
+  color: #000000;
+  font-family: Arial, sans-serif;
+}
+
+.netscapeTitleBar {
+  background: linear-gradient(90deg, #000080 0%, #1084d0 100%);
+  color: #ffffff;
+  padding: 4px 8px;
+  font-size: 13px;
+  font-weight: bold;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.titleControls {
+  display: flex;
+  gap: 3px;
+}
+
+.winBtn {
+  width: 16px;
+  height: 14px;
+  background: #c0c0c0;
+  border: 1px outset #ffffff;
+  color: #000;
+  font-size: 9px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.innerWrapper {
+  background-color: #000000;
+  border: 3px inset #808080;
+  padding: 20px;
+  color: #00ff00;
+  font-family: 'Times New Roman', Times, serif;
+}
+
+/* Marquee Text Banner */
+.marqueeContainer {
+  background: #000066;
+  border: 2px inset #0000ff;
+  color: #ffff00;
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  font-size: 14px;
+  padding: 4px 0;
+  overflow: hidden;
+  margin-bottom: 16px;
+  white-space: nowrap;
+}
+
+.marqueeText {
+  display: inline-block;
+  animation: marquee 16s linear infinite;
+}
+
+.geocitiesHeader {
+  text-align: center;
+  margin-bottom: 20px;
+  border-bottom: 2px dashed #ff00ff;
+  padding-bottom: 14px;
+}
+
+.geocitiesHeading {
+  font-family: 'Comic Neue', 'Comic Sans MS', cursive, sans-serif;
+  font-size: 40px;
+  color: #ffff00;
+  text-shadow: 4px 4px #ff0000;
+  margin: 0 0 6px 0;
+}
+
+.subHeading {
+  color: #00ffff;
+  font-size: 18px;
+  font-style: italic;
+}
+
+.locationTag {
+  color: #00ff00;
+  font-size: 14px;
+  margin-top: 6px;
+}
+
+/* Authentic 2-Column GeoCities Layout */
+.twoColumnLayout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+/* Left Column Navigation Box */
+.leftColumnNav {
+  background: #000044;
+  border: 3px outset #0000ff;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.leftNavTitle {
+  color: #ffff00;
+  font-family: 'Comic Neue', 'Comic Sans MS', cursive;
+  font-weight: bold;
+  font-size: 16px;
+  text-align: center;
+  border-bottom: 2px ridge #ffff00;
+  padding-bottom: 6px;
+}
+
+.pushNavStack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pushNavBtn {
+  background: #c0c0c0;
+  color: #000000;
+  font-family: 'Comic Neue', 'Comic Sans MS', cursive;
+  font-weight: bold;
+  font-size: 14px;
+  padding: 8px 10px;
+  border: 3px outset #ffffff;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+}
+
+.pushNavBtn:active, .pushNavBtnActive {
+  border-style: inset;
+  background: #ffff00;
+  color: #000000;
+}
+
+.leftNavBadges {
+  background: #000022;
+  border: 1px solid #00ffff;
+  padding: 10px;
+  text-align: center;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+}
+
+.constructionBadge {
+  color: #ffff00;
+  font-weight: bold;
+  margin-bottom: 6px;
+}
+
+.hitCounter {
+  background: #000000;
+  color: #00ff00;
+  border: 1px solid #00ff00;
+  padding: 4px;
+  font-weight: bold;
+  letter-spacing: 2px;
+}
+
+.warningBox {
+  background: #550000;
+  border: 2px dashed #ff0000;
+  padding: 10px;
+  text-align: center;
+}
+
+.dontClickBtn {
+  background: #ff0000;
+  color: #ffff00;
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  font-size: 12px;
+  padding: 6px 10px;
+  border: 2px outset #ffffff;
+  cursor: pointer;
+  margin-top: 6px;
+  width: 100%;
+
+  &:hover {
+    background: #ffff00;
+    color: #ff0000;
+  }
+}
+
+/* Right Main Content Column */
+.mainContentColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sectionBox {
+  background: #001122;
+  border: 3px outset #00ffff;
+  padding: 20px;
+}
+
+.itemCard {
+  background: #000044;
+  padding: 12px;
+  border: 1px solid #00ffff;
+  margin-bottom: 12px;
+}
+
+.skillPill {
+  background: #330066;
+  color: #00ffff;
+  border: 1px solid #ff00ff;
+  padding: 4px 10px;
+  font-size: 13px;
+  font-family: monospace;
+}
+
+.projectLinkBtn {
+  color: #ff00ff;
+  font-weight: bold;
+  background: #ffff00;
+  padding: 4px 8px;
+  text-decoration: none;
+  font-size: 12px;
+  display: inline-block;
+}
+
+/* Guestbook UI */
+.guestbookForm {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.guestInput {
+  background: #000033;
+  border: 2px inset #0000ff;
+  color: #00ffff;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  padding: 8px 12px;
+  outline: none;
+}
+
+.submitGuestBtn {
+  background: #ff00ff;
+  color: #ffffff;
+  font-family: 'Comic Neue', 'Comic Sans MS', cursive;
+  font-weight: bold;
+  font-size: 15px;
+  padding: 8px;
+  border: 3px outset #ffffff;
+  cursor: pointer;
+
+  &:hover {
+    background: #ffff00;
+    color: #000000;
+  }
+}
+
+.guestEntriesList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.guestEntryCard {
+  background: #000044;
+  border: 1px dashed #00ffff;
+  padding: 10px;
+}
+
+.geocitiesFooter {
+  text-align: center;
+  color: #888888;
+  font-size: 12px;
+  margin-top: 24px;
+  border-top: 1px solid #333333;
+  padding-top: 12px;
+}
+
+/* HACKED Screen Overlay */
+.hackedOverlay {
+  position: fixed;
+  inset: 0;
+  background: #000000;
+  color: #00ff00;
+  font-family: 'Courier New', monospace;
+  z-index: 999999;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.hackedTitle {
+  font-size: 48px;
+  font-weight: 900;
+  color: #ff0000;
+  animation: glitchPulse 0.2s infinite;
+  margin-bottom: 20px;
+}
+
+.hackedMsg {
+  font-size: 28px;
+  color: #ffff00;
+  font-weight: bold;
+  text-shadow: 0 0 15px #ffff00;
+  max-width: 800px;
+  line-height: 1.5;
+}
+
+@media (max-width: 768px) {
+  .twoColumnLayout {
+    grid-template-columns: 1fr;
+  }
+  .geocitiesHeading {
+    font-size: 28px;
+  }
+  .hackedTitle {
+    font-size: 32px;
+  }
+  .hackedMsg {
+    font-size: 20px;
+  }
+}

@@ -1,0 +1,163 @@
+@keyframes pulseGlow {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.06); opacity: 1; }
+}
+
+@keyframes orbitSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.neuralinkContainer {
+  background: #030712;
+  background-image: 
+    radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.15) 0%, transparent 60%),
+    radial-gradient(circle at 20% 80%, rgba(56, 189, 248, 0.1) 0%, transparent 40%);
+  color: #f8fafc;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  min-height: 100vh;
+  padding: 100px 20px 80px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.innerWrapper {
+  max-width: 650px;
+  width: 100%;
+}
+
+.versionTag {
+  font-family: 'Orbitron', monospace;
+  font-size: 11px;
+  letter-spacing: 3px;
+  color: #8b5cf6;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+/* 3D Head Model Visual Container */
+.head3dModelContainer {
+  width: 240px;
+  height: 240px;
+  margin: 0 auto 30px auto;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.headOutlineCircle {
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  border: 2px dashed rgba(139, 92, 246, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.2) 0%, transparent 70%);
+  box-shadow: 0 0 40px rgba(139, 92, 246, 0.3);
+}
+
+.orbitingDeviceRing {
+  position: absolute;
+  inset: -20px;
+  border: 1px solid rgba(56, 189, 248, 0.5);
+  border-radius: 50%;
+  border-top-color: #38bdf8;
+  animation: orbitSpin 6s linear infinite;
+}
+
+.neuralNodeDot {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: #38bdf8;
+  border-radius: 50%;
+  box-shadow: 0 0 12px #38bdf8;
+  top: 30px;
+  right: 20px;
+}
+
+.stepTitle {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #38bdf8;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.mainHeading {
+  font-size: 38px;
+  font-weight: 800;
+  margin: 0 0 16px 0;
+  background: linear-gradient(135deg, #ffffff 0%, #c084fc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.subText {
+  color: #94a3b8;
+  font-size: 15px;
+  line-height: 1.6;
+  margin-bottom: 36px;
+}
+
+.actionBtn {
+  background: linear-gradient(135deg, #38bdf8 0%, #8b5cf6 100%);
+  color: #030712;
+  font-weight: 800;
+  font-size: 16px;
+  padding: 14px 40px;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  box-shadow: 0 0 25px rgba(56, 189, 248, 0.4);
+  transition: all 0.25s ease;
+}
+
+.actionBtn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 35px rgba(139, 92, 246, 0.6);
+}
+
+.telemetryBox {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 30px;
+  font-family: 'Fira Code', monospace;
+  font-size: 12px;
+  color: #38bdf8;
+  text-align: left;
+}
+
+.errorOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100000;
+}
+
+.errorBox {
+  background: #0f172a;
+  border: 1px solid #ef4444;
+  border-radius: 16px;
+  padding: 30px;
+  max-width: 440px;
+  width: 90%;
+  text-align: center;
+}

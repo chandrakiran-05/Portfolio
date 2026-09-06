@@ -1,0 +1,105 @@
+{
+    "cv": {
+        "name": "Rudra Chandra Kiran",
+        "title": "Software Developer & Computer Science Student",
+        "tagline": "Building knowledge by solving problems and creating things that matter.",
+        "about": "A Computer Science student focused on building strong problem-solving skills, expanding technical knowledge, and creating practical solutions. Experienced across software development, AI agent technologies, content creation, social media, video editing, visual design, and creative production. Interested in combining technology and creativity to build useful and engaging digital experiences.",
+        "location": "Chennai, Tamil Nadu, India",
+        "email": "YOUR_EMAIL_HERE",
+        "phone": "YOUR_PHONE_HERE",
+        "linkedin": "YOUR_LINKEDIN_HANDLE",
+        "linkedinUrl": "YOUR_LINKEDIN_URL"
+    },
+    "jobs": [
+        {
+            "role": "Content & Social Media Manager",
+            "org": "Briks",
+            "period": "4 months",
+            "desc": "Managed content and social media activities, combining content strategy, creative production, video editing, and visual storytelling to build engaging digital content.",
+            "link": "",
+            "linkLabel": ""
+        },
+        {
+            "role": "Technology Intern",
+            "org": "HPE",
+            "period": "1 month",
+            "desc": "Worked on an enterprise AI Agent Platform involving OpenClaw and NVIDIA NeMo integrations, contributing to agent development, integrations, architecture, and technical exploration.",
+            "link": "",
+            "linkLabel": ""
+        }
+    ],
+    "education": [
+        {
+            "school": "YOUR_SCHOOL_NAME",
+            "detail": "Computer Science / Engineering",
+            "period": "YOUR_YEARS"
+        }
+    ],
+    "skills": [
+        "Problem Solving",
+        "Software Development",
+        "Python",
+        "Data Structures & Algorithms",
+        "Artificial Intelligence",
+        "AI Agents",
+        "OpenClaw",
+        "NVIDIA NeMo",
+        "AI Agent Integrations",
+        "System Architecture",
+        "HLD / LLD",
+        "GitHub",
+        "Video Editing",
+        "Colour Grading",
+        "Motion Design",
+        "Visual Design",
+        "Content Creation",
+        "Social Media Management",
+        "Content Strategy",
+        "Creative Direction"
+    ],
+    "languages": [
+        "English"
+    ],
+    "certifications": [],
+    "projects": [
+        {
+            "title": "ACIS Talking Avatar",
+            "tagline": "An interactive AI-powered talking avatar experience.",
+            "desc": "A completed AI project focused on creating a talking avatar experience that combines artificial intelligence, conversational interaction, and visual presentation to create a more engaging way for users to interact with technology.",
+            "link": "",
+            "image": ""
+        },
+        {
+            "title": "Enterprise AI Agent Platform",
+            "tagline": "Connecting enterprise AI agents through OpenClaw and NVIDIA NeMo.",
+            "desc": "An enterprise AI Agent Platform developed during an internship, integrating OpenClaw and NVIDIA NeMo. Work included configuring agents, exploring Agent SDK concepts, building and testing agents, and contributing to architecture and integration work.",
+            "link": "",
+            "image": ""
+        },
+        {
+            "title": "To The Purest Soul (Mother's Day Tribute Site)",
+            "tagline": "A scroll-driven storytelling site made for my mom.",
+            "desc": "A one-page emotional storytelling website built as a Mother's Day gift: a scroll-triggered narrative moving through childhood photos, poetic captions, and a personal family story, ending in a closing tribute message. Focused on soft typography, warm pacing, and photo reveals timed to scroll position rather than a typical grid layout.",
+            "link": "https://formymumma.vercel.app/",
+            "image": ""
+        }
+    ],
+    "interests": [
+        "Artificial Intelligence",
+        "Software Engineering",
+        "Problem Solving",
+        "Building Projects",
+        "Video Editing",
+        "Creative Design",
+        "Content Creation",
+        "Social Media",
+        "Visual Storytelling",
+        "Technology"
+    ],
+    "social": {
+        "github": "",
+        "twitter": "",
+        "dribbble": "",
+        "other": ""
+    }
+}
