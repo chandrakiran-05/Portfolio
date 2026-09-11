@@ -35,7 +35,7 @@ export interface Project {
 
 export interface SocialLinks {
   github?: string;
-  twitter?: string;
+  instagram?: string;
   dribbble?: string;
   other?: string;
 }

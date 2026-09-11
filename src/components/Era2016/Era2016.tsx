@@ -1,7 +1,23 @@
 import React, { useState } from 'react';
 import { CVData } from '../../types/cv';
 import styles from './Era2016.module.css';
-import { ExternalLink, Mail, MapPin, Phone, Github, Twitter, Heart, Send, Calendar, Briefcase, GraduationCap, Code } from 'lucide-react';
+import { ExternalLink, Mail, MapPin, Phone, Github, Instagram, Heart, Send, Calendar, Briefcase, GraduationCap, Code } from 'lucide-react';
+
+const useReveal = () => {
+  const ref = React.useRef<HTMLElement>(null);
+  React.useEffect(() => {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add(styles.revealed);
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
+  return ref;
+};
 
 interface Era2016Props {
   data: CVData;
@@ -9,6 +25,12 @@ interface Era2016Props {
 
 export const Era2016: React.FC<Era2016Props> = ({ data }) => {
   const [contactSubmitted, setContactSubmitted] = useState(false);
+  const aboutRef = useReveal();
+  const expRef = useReveal();
+  const eduRef = useReveal();
+  const skillsRef = useReveal();
+  const projRef = useReveal();
+  const contactRef = useReveal();
 
   const handleContactSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,7 +80,7 @@ export const Era2016: React.FC<Era2016Props> = ({ data }) => {
       {/* Main Content Sections */}
       <main className={styles.mainContainer}>
         {/* About Section */}
-        <section id="about-2016" className={styles.sectionBlock}>
+        <section id="about-2016" className={`${styles.sectionBlock} ${styles.reveal}`} ref={aboutRef as React.RefObject<HTMLElement>}>
           <div className={styles.sectionTitleGroup}>
             <h3 className={styles.sectionTitle}>About Me</h3>
             <div className={styles.sectionDivider} />
@@ -85,7 +107,7 @@ export const Era2016: React.FC<Era2016Props> = ({ data }) => {
         </section>
 
         {/* Experience Timeline Section */}
-        <section id="experience-2016" className={styles.sectionBlock}>
+        <section id="experience-2016" className={`${styles.sectionBlock} ${styles.reveal}`} ref={expRef as React.RefObject<HTMLElement>}>
           <div className={styles.sectionTitleGroup}>
             <h3 className={styles.sectionTitle}>Work Experience</h3>
             <div className={styles.sectionDivider} />
@@ -106,7 +128,7 @@ export const Era2016: React.FC<Era2016Props> = ({ data }) => {
         </section>
 
         {/* Education Section */}
-        <section id="education-2016" className={styles.sectionBlock}>
+        <section id="education-2016" className={`${styles.sectionBlock} ${styles.reveal}`} ref={eduRef as React.RefObject<HTMLElement>}>
           <div className={styles.sectionTitleGroup}>
             <h3 className={styles.sectionTitle}>Education</h3>
             <div className={styles.sectionDivider} />
@@ -125,7 +147,7 @@ export const Era2016: React.FC<Era2016Props> = ({ data }) => {
         </section>
 
         {/* Skills Section */}
-        <section id="skills-2016" className={styles.sectionBlock}>
+        <section id="skills-2016" className={`${styles.sectionBlock} ${styles.reveal}`} ref={skillsRef as React.RefObject<HTMLElement>}>
           <div className={styles.sectionTitleGroup}>
             <h3 className={styles.sectionTitle}>Skills &amp; Technologies</h3>
             <div className={styles.sectionDivider} />
@@ -141,7 +163,7 @@ export const Era2016: React.FC<Era2016Props> = ({ data }) => {
         </section>
 
         {/* Projects Section */}
-        <section id="projects-2016" className={styles.sectionBlock}>
+        <section id="projects-2016" className={`${styles.sectionBlock} ${styles.reveal}`} ref={projRef as React.RefObject<HTMLElement>}>
           <div className={styles.sectionTitleGroup}>
             <h3 className={styles.sectionTitle}>Projects &amp; Portfolio</h3>
             <div className={styles.sectionDivider} />
@@ -193,7 +215,7 @@ export const Era2016: React.FC<Era2016Props> = ({ data }) => {
         </section>
 
         {/* Contact Section */}
-        <section id="contact-2016" className={styles.sectionBlock}>
+        <section id="contact-2016" className={`${styles.sectionBlock} ${styles.reveal}`} ref={contactRef as React.RefObject<HTMLElement>}>
           <div className={styles.sectionTitleGroup}>
             <h3 className={styles.sectionTitle}>Contact Me</h3>
             <div className={styles.sectionDivider} />
@@ -228,9 +250,11 @@ export const Era2016: React.FC<Era2016Props> = ({ data }) => {
                 <a href={data.social.github} target="_blank" rel="noopener noreferrer" title="GitHub">
                   <Github size={22} />
                 </a>
-                <a href={data.social.twitter} target="_blank" rel="noopener noreferrer" title="Twitter">
-                  <Twitter size={22} />
-                </a>
+                {data.social.instagram && (
+                  <a href={data.social.instagram} target="_blank" rel="noopener noreferrer" title="Instagram">
+                    <Instagram size={22} />
+                  </a>
+                )}
                 <a href={data.cv.linkedinUrl} target="_blank" rel="noopener noreferrer" title="LinkedIn">
                   <ExternalLink size={22} />
                 </a>

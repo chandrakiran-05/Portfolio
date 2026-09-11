@@ -88,12 +88,17 @@ export const Era1996: React.FC<Era1996Props> = ({ data }) => {
             </div>
           </div>
 
-          {/* Hero Basic Title Banner */}
+          {/* FIRE BAR — matching Pedro Belleza 1996 */}
+          <div className={styles.fireBar}>
+            {'🔥'.repeat(28)}
+          </div>
+
+          {/* Hero Title Banner */}
           <header className={styles.geocitiesHeader}>
             <h1 className={styles.geocitiesHeading}>
-              {data.cv.name}&apos;s Homepage
+              🔥 {data.cv.name}&apos;s World 96 🔥
             </h1>
-            <div className={styles.subHeading}>~ {data.cv.title} ~</div>
+            <div className={styles.subHeading}>~ This is not a portfolio. It&apos;s a time machine. ~</div>
             <div className={styles.locationTag}>
               📍 <b>Location:</b> {data.cv.location}
             </div>
@@ -174,22 +179,22 @@ export const Era1996: React.FC<Era1996Props> = ({ data }) => {
             <main className={styles.mainContentColumn}>
               {activeSection === 'ABOUT' && (
                 <div className={styles.sectionBox}>
-                  <h2 style={{ color: '#ff00ff', margin: '0 0 10px 0' }}>★ About {data.cv.name}</h2>
-                  <p style={{ color: '#ffffff', fontSize: '16px', lineHeight: '1.6' }}>{data.cv.about}</p>
-                  <div style={{ color: '#ffff00', marginTop: '14px', fontStyle: 'italic' }}>
-                    Tagline: &quot;This is not a portfolio. It&apos;s a time machine.&quot;
+                  <h2>★ About {data.cv.name}</h2>
+                  <p style={{ fontSize: '16px', lineHeight: '1.6' }}>{data.cv.about}</p>
+                  <div style={{ color: '#000080', marginTop: '14px', fontStyle: 'italic', fontWeight: 'bold' }}>
+                    Note: &quot;This is not a portfolio. It&apos;s a time machine.&quot;
                   </div>
                 </div>
               )}
 
               {activeSection === 'WORK' && (
                 <div className={styles.sectionBox}>
-                  <h2 style={{ color: '#ff00ff', margin: '0 0 14px 0' }}>💼 Work Experience</h2>
+                  <h2>💼 Work Experience</h2>
                   {data.jobs.map((job, idx) => (
                     <div key={idx} className={styles.itemCard}>
-                      <h3 style={{ margin: '0 0 4px 0', color: '#ffff00' }}>{job.role} @ {job.org}</h3>
-                      <div style={{ color: '#ff00ff', fontSize: '12px', fontWeight: 'bold' }}>{job.period}</div>
-                      <p style={{ color: '#ffffff', marginTop: '6px', fontSize: '14px' }}>{job.desc}</p>
+                      <h3 style={{ margin: '0 0 4px 0', color: '#000080' }}>{job.role} @ {job.org}</h3>
+                      <div style={{ color: '#555', fontSize: '12px', fontWeight: 'bold' }}>{job.period}</div>
+                      <p style={{ marginTop: '6px', fontSize: '14px' }}>{job.desc}</p>
                     </div>
                   ))}
                 </div>
@@ -197,11 +202,11 @@ export const Era1996: React.FC<Era1996Props> = ({ data }) => {
 
               {activeSection === 'EDU' && (
                 <div className={styles.sectionBox}>
-                  <h2 style={{ color: '#ff00ff', margin: '0 0 14px 0' }}>🎓 School Daze (Education)</h2>
+                  <h2>🎓 School Daze (Education)</h2>
                   {data.education.map((edu, idx) => (
                     <div key={idx} className={styles.itemCard}>
-                      <h3 style={{ margin: '0 0 4px 0', color: '#ffff00' }}>{edu.school}</h3>
-                      <div style={{ color: '#ffffff' }}>{edu.detail} ({edu.period})</div>
+                      <h3 style={{ margin: '0 0 4px 0', color: '#000080' }}>{edu.school}</h3>
+                      <div>{edu.detail} ({edu.period})</div>
                     </div>
                   ))}
                 </div>
@@ -209,7 +214,7 @@ export const Era1996: React.FC<Era1996Props> = ({ data }) => {
 
               {activeSection === 'SKILLS' && (
                 <div className={styles.sectionBox}>
-                  <h2 style={{ color: '#ff00ff', margin: '0 0 14px 0' }}>⚡ Technical &amp; Creative Skills</h2>
+                  <h2>⚡ Technical &amp; Creative Skills</h2>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                     {data.skills.map((skill, idx) => (
                       <span key={idx} className={styles.skillPill}>
@@ -222,12 +227,12 @@ export const Era1996: React.FC<Era1996Props> = ({ data }) => {
 
               {activeSection === 'PROJECTS' && (
                 <div className={styles.sectionBox}>
-                  <h2 style={{ color: '#ff00ff', margin: '0 0 14px 0' }}>🚀 Featured Projects</h2>
+                  <h2>🚀 Featured Projects</h2>
                   {data.projects.map((proj, idx) => (
-                    <div key={idx} className={styles.itemCard} style={{ borderColor: '#ff00ff' }}>
-                      <h3 style={{ color: '#ffff00', margin: '0 0 4px 0' }}>{proj.title}</h3>
-                      <div style={{ color: '#00ffff', fontStyle: 'italic', marginBottom: '6px' }}>{proj.tagline}</div>
-                      <p style={{ color: '#ffffff', fontSize: '14px', margin: '0 0 10px 0' }}>{proj.desc}</p>
+                    <div key={idx} className={styles.itemCard}>
+                      <h3 style={{ color: '#000080', margin: '0 0 4px 0' }}>{proj.title}</h3>
+                      <div style={{ color: '#555', fontStyle: 'italic', marginBottom: '6px' }}>{proj.tagline}</div>
+                      <p style={{ fontSize: '14px', margin: '0 0 10px 0' }}>{proj.desc}</p>
                       {proj.link && (
                         <a href={proj.link} target="_blank" rel="noopener noreferrer" className={styles.projectLinkBtn}>
                           👉 CLICK HERE TO VISIT LIVE SITE 👈
@@ -240,11 +245,11 @@ export const Era1996: React.FC<Era1996Props> = ({ data }) => {
 
               {activeSection === 'CONTACT' && (
                 <div className={styles.sectionBox}>
-                  <h2 style={{ color: '#ff00ff', margin: '0 0 14px 0' }}>✉️ Contact {data.cv.name}</h2>
-                  <div style={{ color: '#ffffff', fontSize: '16px', lineHeight: '1.8' }}>
-                    <div><b>Email:</b> <a href={`mailto:${data.cv.email}`} style={{ color: '#00ffff' }}>{data.cv.email}</a></div>
-                    <div><b>Phone:</b> <a href={`tel:${data.cv.phone}`} style={{ color: '#00ffff' }}>{data.cv.phone}</a></div>
-                    <div><b>LinkedIn:</b> <a href={data.cv.linkedinUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#00ffff' }}>{data.cv.linkedinUrl}</a></div>
+                  <h2>✉️ Contact {data.cv.name}</h2>
+                  <div style={{ fontSize: '16px', lineHeight: '1.8' }}>
+                    <div><b>Email:</b> <a href={`mailto:${data.cv.email}`} style={{ color: '#0000ff' }}>{data.cv.email}</a></div>
+                    <div><b>Phone:</b> <a href={`tel:${data.cv.phone}`} style={{ color: '#0000ff' }}>{data.cv.phone}</a></div>
+                    <div><b>LinkedIn:</b> <a href={data.cv.linkedinUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#0000ff' }}>{data.cv.linkedinUrl}</a></div>
                   </div>
                 </div>
               )}

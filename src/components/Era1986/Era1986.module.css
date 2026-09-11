@@ -1,553 +1,581 @@
-@keyframes crtRoomGlow {
-  0% { box-shadow: inset 0 0 60px rgba(0, 255, 0, 0.15), 0 0 40px rgba(0, 255, 0, 0.2); }
-  50% { box-shadow: inset 0 0 90px rgba(0, 255, 0, 0.25), 0 0 60px rgba(0, 255, 0, 0.35); }
-  100% { box-shadow: inset 0 0 60px rgba(0, 255, 0, 0.15), 0 0 40px rgba(0, 255, 0, 0.2); }
+/* ─── 1986: Pedro Belleza Style — Full viewport black terminal ─── */
+
+@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+/* Keyframes */
+@keyframes blink {
+  0%, 49%  { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+@keyframes scanline {
+  0%   { background-position: 0 0; }
+  100% { background-position: 0 100vh; }
+}
+@keyframes crtFlicker {
+  0%, 96%, 100% { opacity: 1; }
+  97%  { opacity: 0.93; }
+  98%  { opacity: 0.97; }
+  99%  { opacity: 0.94; }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes phosphorGlow {
+  0%, 100% { text-shadow: 0 0 6px #00ff41, 0 0 12px rgba(0,255,65,0.3); }
+  50%       { text-shadow: 0 0 10px #00ff41, 0 0 25px rgba(0,255,65,0.5); }
 }
 
-@keyframes scanlineFlicker {
-  0% { opacity: 0.95; }
-  50% { opacity: 1; }
-  100% { opacity: 0.95; }
-}
-
+/* ─── Full-Page CRT Terminal (no TV frame) ─── */
 .tvMonitorContainer {
-  background-color: #020c02;
-  background-image: 
-    radial-gradient(ellipse at center, rgba(0, 40, 0, 0.8) 0%, rgba(0, 10, 0, 0.95) 80%),
-    linear-gradient(rgba(0, 255, 0, 0.03) 1px, transparent 1px);
-  background-size: 100% 100%, 100% 4px;
+  background: #000000;
   min-height: 100vh;
-  padding: 70px 16px 50px 16px;
   display: flex;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
-  align-items: center;
-  box-sizing: border-box;
   font-family: 'VT323', 'Courier New', monospace;
-  animation: scanlineFlicker 0.15s infinite;
-}
-
-/* Vintage CRT TV Cabinet Bezel Frame */
-.tvCabinet {
-  background: linear-gradient(145deg, #182218, #0a140a);
-  border: 12px solid #202d20;
-  border-radius: 28px;
-  padding: 24px;
-  max-width: 1020px;
-  width: 100%;
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.95), 0 0 40px rgba(0, 255, 0, 0.25);
+  color: #00ff41;
   position: relative;
-  animation: crtRoomGlow 4s infinite ease-in-out;
+  overflow: hidden;
+  padding: 60px 20px 40px;
+  box-sizing: border-box;
+  animation: crtFlicker 12s infinite;
 }
 
-.tvBrandLabel {
+/* Scanline overlay across full page */
+.tvMonitorContainer::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.13) 2px,
+    rgba(0, 0, 0, 0.13) 4px
+  );
+  pointer-events: none;
+  z-index: 1000;
+}
+
+/* Subtle green phosphor vignette */
+.tvMonitorContainer::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 50%, transparent 55%, rgba(0,0,0,0.7) 100%);
+  pointer-events: none;
+  z-index: 999;
+}
+
+/* ─── 3D CRT Monitor Shell ─── */
+.tvCabinet {
+  width: 100%;
+  max-width: 900px;
+  background: #111;
+  border-radius: 40px;
+  padding: 40px 30px;
+  box-shadow: 
+    inset 0 0 20px rgba(255,255,255,0.1),
+    0 10px 30px rgba(0,0,0,0.8),
+    0 0 50px rgba(0,255,65,0.1);
+  border: 4px solid #222;
+  border-bottom: 8px solid #0a0a0a;
+  position: relative;
+  z-index: 10;
+  margin: 40px auto;
+}
+
+.tvCabinet::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  border-radius: 36px;
+  box-shadow: inset 0 20px 20px -20px rgba(255,255,255,0.3);
+  pointer-events: none;
+}
+
+.tvBrandLabel, .crtCurvature, .scanlineOverlay { display: none; }
+
+.crtScreen {
+  background: #020202;
+  border-radius: 20px;
+  box-shadow: 
+    inset 0 0 40px rgba(0,0,0,0.9),
+    inset 0 0 10px rgba(0,255,65,0.1);
+  padding: 30px;
+  min-height: 60vh;
+  color: #00ff41;
+  text-shadow: 0 0 6px rgba(0,255,65,0.4);
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
-  margin-bottom: 14px;
-  padding: 0 8px;
-  color: #728c6e;
-  font-size: 14px;
-  letter-spacing: 1.5px;
+  position: relative;
+  overflow: hidden;
 }
 
+.crtScreen::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  border-radius: 20px;
+  box-shadow: inset 0 0 100px rgba(0,0,0,0.8);
+  pointer-events: none;
+  z-index: 20;
+}
+
+/* Power LED — now top-right of page */
 .powerGroup {
+  position: fixed;
+  top: 20px;
+  right: 24px;
   display: flex;
   align-items: center;
   gap: 8px;
+  color: #004400;
+  font-size: 13px;
+  z-index: 100;
+  font-family: 'VT323', monospace;
 }
-
+.tvBrandLabel { display: none; }
 .powerLed {
-  width: 12px;
-  height: 12px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  background: #551111;
-  box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.8);
+  background: #1a0000;
 }
-
 .powerLedOn {
-  background: #00ff00;
-  box-shadow: 0 0 12px #00ff00;
+  background: #00ff44;
+  box-shadow: 0 0 8px #00ff44, 0 0 16px rgba(0,255,68,0.4);
 }
 
-/* Curved Glass Phosphor CRT Screen */
-.crtScreen {
-  background: #000c00;
-  border: 4px solid #003800;
-  border-radius: 16px;
-  padding: 24px;
-  color: #00ff00;
-  min-height: 560px;
-  position: relative;
-  overflow: hidden;
-  box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.95), 0 0 25px rgba(0, 255, 0, 0.25);
-  text-shadow: 0 0 6px rgba(0, 255, 0, 0.7);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.scanlineOverlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
-  background-size: 100% 4px;
-  z-index: 10;
-}
-
-/* Startup Pre-connect Box */
+/* ─── Pre-Connect State ─── */
 .startupPreconnectBox {
   text-align: center;
-  padding: 40px 20px;
-  max-width: 650px;
-  margin: 40px auto;
-  border: 2px dashed #00ff00;
-  background: rgba(0, 30, 0, 0.4);
+  padding: 0;
+  max-width: 700px;
+  width: 100%;
+  border: none;
+  background: transparent;
+  animation: fadeIn 0.8s ease;
+  position: relative;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
 }
 
 .baudHeader {
-  background: #00ff00;
-  color: #000000;
+  color: #00ff41;
   font-size: 18px;
-  font-weight: bold;
-  padding: 6px 16px;
-  letter-spacing: 2px;
-  display: inline-block;
-  margin-bottom: 16px;
+  letter-spacing: 3px;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin-bottom: 8px;
+  animation: phosphorGlow 3s ease-in-out infinite;
 }
 
-.startupTitle {
-  font-size: 24px;
-  color: #00ff00;
-  margin: 0 0 12px 0;
-}
-
-.startupText {
-  font-size: 17px;
-  color: #88ff88;
-  line-height: 1.5;
-  margin-bottom: 24px;
-}
-
-.connectBtn {
-  background: #00ff00;
-  color: #000000;
-  font-family: 'VT323', monospace;
-  font-size: 22px;
-  font-weight: bold;
-  padding: 10px 32px;
-  border: 2px solid #ffffff;
-  cursor: pointer;
-  box-shadow: 0 0 15px #00ff00;
-  transition: all 0.2s ease;
-}
-
-.connectBtn:hover {
-  background: #ffffff;
-  color: #000000;
-  box-shadow: 0 0 25px #ffffff;
-}
-
-/* Teletype Typing Animation Sequence Screen */
-.typingLogContainer {
-  padding: 20px;
-  background: rgba(0, 20, 0, 0.6);
-  border: 1px solid #00ff00;
-  min-height: 380px;
-}
-
-.typingLogHeader {
-  color: #ffff00;
-  font-size: 18px;
-  font-weight: bold;
-  margin-bottom: 16px;
-  border-bottom: 1px dashed #ffff00;
-  padding-bottom: 6px;
-}
-
-.typingLogBox {
-  font-size: 18px;
-  line-height: 1.6;
-  color: #00ff00;
-}
-
-.typingLine {
+.blinkingBlockLarge {
+  font-size: 32px;
+  color: #00ff41;
+  animation: blink 0.8s step-start infinite;
   margin-bottom: 8px;
 }
 
+.startupTitle {
+  font-size: 28px;
+  color: #00ff41;
+  margin: 0;
+  letter-spacing: 1px;
+  animation: phosphorGlow 3s ease-in-out infinite;
+}
+
+.startupText {
+  font-size: 20px;
+  color: #33cc55;
+  line-height: 1.6;
+  margin: 0;
+  opacity: 0.85;
+}
+
+.connectBtn {
+  background: #00ff41;
+  color: #000;
+  font-family: 'VT323', monospace;
+  font-size: 26px;
+  font-weight: bold;
+  padding: 10px 50px;
+  border: none;
+  cursor: pointer;
+  letter-spacing: 4px;
+  box-shadow: 0 0 30px rgba(0,255,65,0.6);
+  transition: all 0.2s ease;
+  margin-top: 8px;
+}
+.connectBtn:hover {
+  background: #ffffff;
+  box-shadow: 0 0 50px rgba(255,255,255,0.8);
+  transform: scale(1.03);
+}
+
+/* ─── Connecting/Dialing ─── */
+.typingLogContainer {
+  text-align: left;
+  width: 100%;
+  max-width: 720px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  animation: fadeIn 0.4s ease;
+  position: relative;
+  z-index: 5;
+}
+.typingLogHeader {
+  color: #ffff00;
+  font-size: 18px;
+  margin-bottom: 20px;
+  letter-spacing: 1px;
+  border-bottom: 1px solid rgba(0,255,65,0.2);
+  padding-bottom: 10px;
+}
+.typingLogBox {
+  font-size: 20px;
+  line-height: 1.7;
+  color: #00ff41;
+}
+.typingLine {
+  animation: slideUp 0.2s ease;
+}
+
+/* ─── Connected Terminal ─── */
 .terminalBodyContent {
+  width: 100%;
+  max-width: 860px;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  flex: 1;
+  position: relative;
+  z-index: 5;
+  animation: fadeIn 0.5s ease;
 }
 
+/* Top BBS Header — top bar across screen */
 .topBbsHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #005500;
-  padding-bottom: 8px;
-}
-
-.sysOpTitle {
+  border-bottom: 1px solid rgba(0,255,65,0.2);
+  padding-bottom: 10px;
   font-size: 18px;
-  letter-spacing: 2px;
-  color: #00ff00;
-  font-weight: bold;
+  width: 100%;
 }
-
-.soundToggleBtn {
-  background: #001a00;
-  color: #00ff00;
-  border: 1px solid #00ff00;
-  font-family: 'VT323', monospace;
-  font-size: 15px;
-  padding: 2px 10px;
-  cursor: pointer;
-  box-shadow: 0 0 8px rgba(0, 255, 0, 0.3);
+.sysOpTitle {
+  color: #00ff41;
+  font-size: 17px;
+  letter-spacing: 1px;
+  animation: phosphorGlow 4s ease-in-out infinite;
 }
-
-.soundToggleBtn:hover {
-  background: #00ff00;
-  color: #000000;
-  font-weight: bold;
-}
-
-.connectionLogBox {
-  font-size: 16px;
-  line-height: 1.4;
-  color: #00ff00;
-  margin-bottom: 8px;
-}
-
-.quoteLine {
-  color: #88ff88;
-  margin-top: 4px;
-}
-
-.readyLine {
-  color: #00ff00;
-  margin-top: 2px;
-}
-
-.asciiMenuBox {
-  font-size: 15px;
-  line-height: 1.3;
-  color: #00ff00;
-  user-select: none;
-  max-width: 820px;
-}
-
-.asciiMenuHeader, .asciiMenuFooter {
-  white-space: pre;
-  color: #00ff00;
-}
-
-.asciiMenuOptions {
-  border-left: 1px solid #00ff00;
-  border-right: 1px solid #00ff00;
-  padding: 6px 20px;
-  background: rgba(0, 20, 0, 0.4);
+.headerControls {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  align-items: center;
+  gap: 12px;
 }
-
-.menuLine {
+.soundToggleBtn {
+  background: transparent;
+  color: #00ff41;
+  border: 1px solid rgba(0,255,65,0.4);
+  font-family: 'VT323', monospace;
+  font-size: 16px;
+  padding: 2px 12px;
   cursor: pointer;
-  transition: all 0.15s ease;
-  padding: 2px 6px;
+  transition: all 0.15s;
 }
-
-.menuLine:hover {
-  background: #00ff00;
-  color: #000000;
-  font-weight: bold;
-}
-
-.keyTag {
+.soundToggleBtn:hover { background: rgba(0,255,65,0.1); }
+.modeTag {
+  color: #006620;
+  font-size: 14px;
   letter-spacing: 1px;
 }
 
-/* Enlarged Snake Game Dialogue Box Container */
+/* Connection Log */
+.connectionLogBox {
+  font-size: 18px;
+  line-height: 1.6;
+  color: #00cc33;
+  padding: 0;
+  background: transparent;
+  border: none;
+}
+.quoteLine { color: #33cc55; font-style: italic; }
+.readyLine { color: #00ff41; margin-top: 6px; }
+
+/* ─── BBS Menu ─── */
+.asciiMenuBox {
+  font-size: 18px;
+  line-height: 1.3;
+  color: #00ff41;
+  user-select: none;
+  width: 100%;
+}
+.asciiMenuHeader, .asciiMenuFooter {
+  white-space: pre;
+  color: rgba(0,255,65,0.35);
+  font-size: 15px;
+  line-height: 1.2;
+}
+.asciiMenuOptions {
+  padding: 6px 20px;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.menuLine {
+  cursor: pointer;
+  padding: 4px 8px;
+  display: flex;
+  align-items: center;
+  transition: background 0.1s, text-shadow 0.1s;
+  border-radius: 2px;
+}
+.menuLine:hover {
+  background: rgba(0,255,65,0.08);
+  text-shadow: 0 0 8px rgba(0,255,65,0.6);
+}
+.menuKey { color: #ffffff; font-weight: bold; min-width: 30px; }
+.menuDots { color: rgba(0,255,65,0.3); }
+.menuLabel { color: #00ff41; }
+
+/* DOS mode */
+.dosPromptLabel {
+  color: #00cc33;
+  font-size: 17px;
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+/* ─── Snake Game ─── */
 .snakeDialogueBox {
-  background: #000b00;
-  border: 2px solid #00ff00;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 0 25px rgba(0, 255, 0, 0.25);
-  margin-bottom: 12px;
+  background: rgba(0,20,0,0.4);
+  border: 1px solid rgba(0,255,65,0.3);
+  border-radius: 4px;
+  padding: 16px 18px;
   width: 100%;
   box-sizing: border-box;
 }
-
 .snakeHeaderBar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #006600;
-  padding-bottom: 10px;
-  margin-bottom: 14px;
-  font-size: 20px;
+  border-bottom: 1px solid rgba(0,255,65,0.2);
+  padding-bottom: 8px;
+  margin-bottom: 12px;
+  font-size: 18px;
 }
-
-.snakeTitle {
-  color: #ffff00;
-  font-weight: bold;
-}
-
-.snakeScore {
-  color: #00ff00;
-  margin-right: 20px;
-  font-weight: bold;
-}
-
-.snakeHighScore {
-  color: #88ff88;
-}
+.snakeTitle { color: #ffff00; }
+.snakeScore { color: #00ff41; }
+.snakeHighScore { color: #33cc55; }
 
 .snakeBoardCanvas {
   background: #000400;
-  border: 2px solid #004400;
-  padding: 16px;
+  border: 1px solid rgba(0,255,65,0.2);
+  padding: 6px 8px;
   font-family: 'VT323', monospace;
-  font-size: 22px;
+  font-size: 16px;
   line-height: 1;
-  letter-spacing: 4px;
+  letter-spacing: 3px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 10px;
   user-select: none;
+  overflow: hidden;
 }
-
-.snakeRow {
-  white-space: pre;
-}
-
-.cellEmpty {
-  color: #002600;
-}
-
-.cellHead {
-  color: #ffffff;
-  font-weight: bold;
-  text-shadow: 0 0 8px #ffffff;
-}
-
-.cellBody {
-  color: #00ff00;
-  font-weight: bold;
-}
-
-.cellFood {
-  color: #ffff00;
-  font-weight: bold;
-  animation: blink 0.5s infinite;
-}
+.snakeRow { white-space: pre; display: flex; }
+.cellEmpty { color: rgba(0,40,0,0.8); }
+.cellHead  { color: #ffffff; font-weight: bold; text-shadow: 0 0 8px #fff; }
+.cellBody  { color: #00ff41; }
+.cellFood  { color: #ffff00; animation: blink 0.4s step-start infinite; }
 
 .gameOverOverlay {
   text-align: center;
-  padding: 16px;
-  background: rgba(30, 0, 0, 0.9);
-  border: 2px solid #ff3333;
+  padding: 12px;
+  background: rgba(30,0,0,0.9);
+  border: 1px solid rgba(255,50,50,0.5);
   color: #ff3333;
-
-  h2 {
-    font-size: 24px;
-    margin: 0 0 6px 0;
-  }
 }
-
-.snakeBtnRow {
-  display: flex;
-  justify-content: center;
-  gap: 16px;
-  margin-top: 12px;
-}
-
+.gameOverTitle { font-size: 24px; margin-bottom: 8px; }
+.snakeBtnRow { display: flex; justify-content: center; gap: 16px; margin-top: 10px; }
 .snakeActionBtn {
-  background: #00ff00;
-  color: #000000;
+  background: #00ff41;
+  color: #000;
   font-family: 'VT323', monospace;
   font-size: 18px;
   font-weight: bold;
-  padding: 6px 18px;
+  padding: 5px 18px;
   border: none;
   cursor: pointer;
-
-  &:hover {
-    background: #ffffff;
-  }
+  transition: background 0.15s;
 }
+.snakeActionBtn:hover { background: #fff; }
 
 .snakeFooterControls {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-end;
+  gap: 16px;
 }
-
 .dpadControls {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 4px;
-
-  button {
-    background: #002200;
-    color: #00ff00;
-    border: 1px solid #00ff00;
-    font-family: 'VT323', monospace;
-    font-size: 16px;
-    padding: 4px 14px;
-    cursor: pointer;
-
-    &:hover {
-      background: #00ff00;
-      color: #000000;
-    }
-  }
 }
-
-.dpadRow {
+.dpadControls button {
+  background: transparent;
+  color: #00ff41;
+  border: 1px solid rgba(0,255,65,0.35);
+  font-family: 'VT323', monospace;
+  font-size: 18px;
+  padding: 2px 14px;
+  cursor: pointer;
+  transition: all 0.1s;
+  min-width: 42px;
+}
+.dpadControls button:hover { background: rgba(0,255,65,0.15); }
+.dpadRow { display: flex; gap: 12px; }
+.snakeHints {
+  text-align: right;
+  font-size: 14px;
+  color: #004400;
   display: flex;
-  gap: 16px;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-end;
 }
-
 .exitSnakeBtn {
-  background: #220000;
-  color: #ff3333;
-  border: 1px solid #ff3333;
+  background: transparent;
+  color: rgba(255,68,68,0.7);
+  border: 1px solid rgba(255,68,68,0.35);
   font-family: 'VT323', monospace;
   font-size: 16px;
-  padding: 6px 16px;
+  padding: 4px 12px;
   cursor: pointer;
-
-  &:hover {
-    background: #ff3333;
-    color: #000000;
-  }
+  margin-top: 4px;
+  transition: all 0.1s;
 }
+.exitSnakeBtn:hover { background: rgba(255,68,68,0.1); }
 
+/* ─── Terminal Output ─── */
 .outputConsoleLog {
-  background: #000500;
-  border: 1px solid #004400;
-  padding: 12px;
-  font-size: 16px;
-  line-height: 1.5;
+  background: transparent;
+  border: none;
+  border-left: 2px solid rgba(0,255,65,0.15);
+  padding: 8px 16px;
+  font-size: 17px;
+  line-height: 1.55;
   white-space: pre-wrap;
-  max-height: 220px;
+  max-height: 260px;
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0,255,65,0.3) transparent;
 }
+.outputConsoleLog::-webkit-scrollbar { width: 4px; }
+.outputConsoleLog::-webkit-scrollbar-thumb { background: rgba(0,255,65,0.3); }
+.logLine { color: #00ff41; }
 
-.logLine {
-  color: #00ff00;
-}
-
+/* ─── Command Form ─── */
 .commandForm {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: #001200;
-  border: 1px solid #00ff00;
-  padding: 6px 12px;
+  background: transparent;
+  border-top: 1px solid rgba(0,255,65,0.15);
+  padding-top: 12px;
+  flex-shrink: 0;
 }
-
 .promptLabel {
-  color: #00ff00;
-  font-size: 18px;
+  color: #00ff41;
+  font-size: 20px;
   font-weight: bold;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
-
 .commandInput {
   background: transparent;
   border: none;
-  color: #00ff00;
+  color: #00ff41;
   font-family: 'VT323', monospace;
   font-size: 20px;
   width: 100%;
   outline: none;
   caret-color: transparent;
+  text-shadow: 0 0 6px rgba(0,255,65,0.4);
 }
-
 .blinkingCursor {
-  color: #00ff00;
+  color: #00ff41;
   font-size: 20px;
-  animation: blink 0.8s infinite;
+  animation: blink 0.7s step-start infinite;
+  flex-shrink: 0;
 }
 
-@keyframes blink {
-  0%, 49% { opacity: 1; }
-  50%, 100% { opacity: 0; }
-}
-
+/* ─── Quick Hints ─── */
 .quickCommandHints {
   display: flex;
   align-items: center;
   gap: 6px;
   flex-wrap: wrap;
-  font-size: 15px;
-  color: #008800;
+  font-size: 14px;
+  color: #004400;
+  border-top: 1px solid rgba(0,255,65,0.08);
+  padding-top: 8px;
 }
-
 .quickCommandHints button {
   background: transparent;
   border: none;
-  color: #00ff00;
+  color: rgba(0,255,65,0.4);
   font-family: 'VT323', monospace;
-  font-size: 15px;
+  font-size: 14px;
   cursor: pointer;
-  padding: 0;
-
-  &:hover {
-    color: #ffff00;
-    text-decoration: underline;
-  }
+  padding: 1px 4px;
+  transition: color 0.1s;
 }
+.quickCommandHints button:hover { color: #ffff00; }
 
+/* ─── Bottom Next Era ─── */
 .bottomNextEraBox {
   text-align: center;
-  margin-top: 16px;
-  border-top: 1px solid #004400;
-  padding-top: 12px;
+  margin-top: 24px;
+  padding-top: 0;
+  border: none;
 }
-
 .nextEraBtn {
-  background: #00ff00;
-  color: #000000;
+  background: #00ff41;
+  color: #000;
   font-family: 'VT323', monospace;
-  font-size: 20px;
+  font-size: 22px;
   font-weight: bold;
-  padding: 6px 28px;
-  border: 2px outset #ffffff;
+  padding: 8px 40px;
+  border: none;
   cursor: pointer;
-  letter-spacing: 2px;
-  box-shadow: 0 0 10px rgba(0, 255, 0, 0.4);
+  letter-spacing: 4px;
+  box-shadow: 0 0 20px rgba(0,255,65,0.5);
+  transition: all 0.2s;
 }
+.nextEraBtn:hover { background: #fff; box-shadow: 0 0 40px rgba(255,255,255,0.7); }
 
-.nextEraBtn:hover {
-  background: #ffffff;
-  color: #000000;
-  box-shadow: 0 0 15px #ffffff;
-}
-
+/* ─── Responsive ─── */
 @media (max-width: 768px) {
-  .tvCabinet {
-    padding: 10px;
-    border-width: 6px;
-  }
-  .crtScreen {
-    padding: 12px;
-  }
-  .snakeBoardCanvas {
-    font-size: 16px;
-    letter-spacing: 2px;
-  }
-  .asciiMenuBox {
-    font-size: 13px;
-  }
+  .tvMonitorContainer { padding: 50px 16px 30px; }
+  .snakeBoardCanvas { font-size: 12px; letter-spacing: 1px; }
+  .asciiMenuBox { font-size: 15px; }
+  .connectionLogBox { font-size: 16px; }
 }

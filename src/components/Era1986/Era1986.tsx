@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { CVData } from '../../types/cv';
 import styles from './Era1986.module.css';
 
@@ -7,24 +7,26 @@ interface Era1986Props {
   onNextEra?: () => void;
 }
 
+type AppMode = 'BBS' | 'DOS' | 'SNAKE';
+
 export const Era1986: React.FC<Era1986Props> = ({ data, onNextEra }) => {
   const [isConnected, setIsConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [typedLines, setTypedLines] = useState<string[]>([]);
+  const [typingIndex, setTypingIndex] = useState(0);
   const [soundEnabled, setSoundEnabled] = useState(true);
-  const [mode, setMode] = useState<'BBS' | 'DOS' | 'SNAKE'>('BBS');
+  const [mode, setMode] = useState<AppMode>('BBS');
   const [commandInput, setCommandInput] = useState('');
   const [terminalHistory, setTerminalHistory] = useState<string[]>([]);
   const [isTypingOutput, setIsTypingOutput] = useState(false);
 
-  // Snake Game State (32x14 Grid)
+  // Snake game state (40x18 Grid for bigger canvas)
   const [snake, setSnake] = useState<{ x: number; y: number }[]>([
-    { x: 12, y: 7 },
-    { x: 11, y: 7 },
-    { x: 10, y: 7 }
+    { x: 15, y: 9 }, { x: 14, y: 9 }, { x: 13, y: 9 }
   ]);
-  const [food, setFood] = useState<{ x: number; y: number }>({ x: 22, y: 5 });
+  const [food, setFood] = useState<{ x: number; y: number }>({ x: 28, y: 6 });
   const [direction, setDirection] = useState<'UP' | 'DOWN' | 'LEFT' | 'RIGHT'>('RIGHT');
+  const [nextDirection, setNextDirection] = useState<'UP' | 'DOWN' | 'LEFT' | 'RIGHT'>('RIGHT');
   const [score, setScore] = useState(0);
   const [highScore, setHighScore] = useState(120);
   const [gameOver, setGameOver] = useState(false);
@@ -32,512 +34,457 @@ export const Era1986: React.FC<Era1986Props> = ({ data, onNextEra }) => {
   const terminalEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
+  const directionRef = useRef(direction);
 
-  // Initialize or Get Web Audio Context
-  const getAudioContext = () => {
+  useEffect(() => { directionRef.current = direction; }, [direction]);
+
+  const getAudioContext = useCallback(() => {
     if (!audioCtxRef.current) {
       const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
       if (AudioCtx) audioCtxRef.current = new AudioCtx();
     }
-    if (audioCtxRef.current && audioCtxRef.current.state === 'suspended') {
+    if (audioCtxRef.current?.state === 'suspended') {
       audioCtxRef.current.resume();
     }
     return audioCtxRef.current;
-  };
+  }, []);
 
-  // Play Authentic Vintage Teletype Key Click Sound Effect
-  const playKeyClickSound = (freq = 850, type: OscillatorType = 'square', duration = 0.03) => {
+  const playSound = useCallback((freq = 850, type: OscillatorType = 'square', duration = 0.03) => {
     if (!soundEnabled) return;
     try {
       const ctx = getAudioContext();
       if (!ctx) return;
-
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
-
       osc.type = type;
       osc.frequency.setValueAtTime(freq, ctx.currentTime);
-
-      gain.gain.setValueAtTime(0.08, ctx.currentTime);
+      gain.gain.setValueAtTime(0.06, ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
-
       osc.connect(gain);
       gain.connect(ctx.destination);
-
       osc.start();
       osc.stop(ctx.currentTime + duration);
-    } catch (e) {
-      // Audio fallback silent
-    }
-  };
+    } catch (_) {}
+  }, [soundEnabled, getAudioContext]);
 
+  // Auto scroll terminal
   useEffect(() => {
-    if (terminalEndRef.current) {
-      terminalEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
+    terminalEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [terminalHistory, typedLines, isConnected, mode]);
 
-  // Initial Startup Teletype Typing Animation Sequence (Slower & Authentic Sound)
-  const handleConnect = () => {
+  // Dial-up connecting animation (line by line with character typing)
+  const handleConnect = useCallback(() => {
     setIsConnecting(true);
     setTypedLines([]);
-    playKeyClickSound(500, 'square', 0.15);
+    setTypingIndex(0);
+    playSound(500, 'square', 0.15);
+  }, [playSound]);
 
-    const logLines = [
-      'DIALING 1-800-CHANDRA...',
-      'CARRIER DETECT 1200 BAUD',
-      'CONNECT 1200 / 8-N-1 ANSI',
-      `Welcome, GUEST. You are caller #002,481.`,
-      `SysOp: ${data.cv.name.toUpperCase()}`,
-      `Last on: 14 JUN 1986  11:47 PM`,
-      `>> "This is not a portfolio. It's a time machine."`,
-      `> SYSTEM READY. Type HELP or DIR and press ENTER.`
-    ];
+  const logLines = [
+    'ATDT 1-800-CHANDRA...',
+    'RING ... RING ...',
+    'CARRIER DETECT 1200 BAUD',
+    'CONNECT 1200 / 8-N-1 / ANSI',
+    `Welcome, GUEST. You are caller #002,481.`,
+    `SysOp: ${data.cv.name.toUpperCase()}`,
+    `Last on: 14 JUN 1986  11:47 PM`,
+    `>> "This is not a portfolio. It's a time machine."`,
+    `> SYSTEM READY. Type HELP or press any letter key.`
+  ];
 
-    let lineIdx = 0;
-    const lineInterval = setInterval(() => {
-      if (lineIdx < logLines.length) {
-        const fullLine = logLines[lineIdx];
-        setTypedLines(prev => [...prev, fullLine]);
-        playKeyClickSound(600 + lineIdx * 80, 'square', 0.06);
-        lineIdx++;
-      } else {
-        clearInterval(lineInterval);
+  // Sequential line reveal with typing sound
+  useEffect(() => {
+    if (!isConnecting) return;
+    if (typingIndex >= logLines.length) {
+      const t = setTimeout(() => {
         setIsConnecting(false);
         setIsConnected(true);
-      }
-    }, 600); // 600ms per line so it is clearly visible and slow!
-  };
+      }, 400);
+      return () => clearTimeout(t);
+    }
+    const t = setTimeout(() => {
+      setTypedLines(prev => [...prev, logLines[typingIndex]]);
+      playSound(600 + typingIndex * 50, 'square', 0.05);
+      setTypingIndex(i => i + 1);
+    }, 550);
+    return () => clearTimeout(t);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isConnecting, typingIndex]);
 
-  // Keyboard Controls (Prevents Page Scroll Jump!)
+  // Keyboard controls for Snake — prevent page scroll
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (mode === 'SNAKE') {
         if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
-          e.preventDefault(); // Lock page scroll position!
+          e.preventDefault();
         }
-        if ((e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') && direction !== 'DOWN') {
-          setDirection('UP');
-          playKeyClickSound(950, 'square', 0.025);
-        }
-        if ((e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') && direction !== 'UP') {
-          setDirection('DOWN');
-          playKeyClickSound(950, 'square', 0.025);
-        }
-        if ((e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') && direction !== 'RIGHT') {
-          setDirection('LEFT');
-          playKeyClickSound(950, 'square', 0.025);
-        }
-        if ((e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') && direction !== 'LEFT') {
-          setDirection('RIGHT');
-          playKeyClickSound(950, 'square', 0.025);
-        }
+        const d = directionRef.current;
+        if ((e.key === 'ArrowUp' || e.key === 'w') && d !== 'DOWN') setNextDirection('UP');
+        if ((e.key === 'ArrowDown' || e.key === 's') && d !== 'UP') setNextDirection('DOWN');
+        if ((e.key === 'ArrowLeft' || e.key === 'a') && d !== 'RIGHT') setNextDirection('LEFT');
+        if ((e.key === 'ArrowRight' || e.key === 'd') && d !== 'LEFT') setNextDirection('RIGHT');
       }
     };
-    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keydown', handleKeyDown, { passive: false });
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [mode, direction]);
+  }, [mode]);
 
-  // Snake Game Loop (32x14 Grid)
+  // Snake game loop
   useEffect(() => {
     if (mode !== 'SNAKE' || gameOver) return;
-
     const interval = setInterval(() => {
+      setDirection(nextDirection);
       setSnake(prevSnake => {
+        const currentDir = nextDirection;
         const head = { ...prevSnake[0] };
-        if (direction === 'UP') head.y -= 1;
-        if (direction === 'DOWN') head.y += 1;
-        if (direction === 'LEFT') head.x -= 1;
-        if (direction === 'RIGHT') head.x += 1;
+        if (currentDir === 'UP') head.y -= 1;
+        if (currentDir === 'DOWN') head.y += 1;
+        if (currentDir === 'LEFT') head.x -= 1;
+        if (currentDir === 'RIGHT') head.x += 1;
 
-        // Boundaries (32x14)
-        if (head.x < 0 || head.x >= 32 || head.y < 0 || head.y >= 14) {
-          playKeyClickSound(220, 'sawtooth', 0.25);
+        if (head.x < 0 || head.x >= 40 || head.y < 0 || head.y >= 18) {
+          playSound(180, 'sawtooth', 0.3);
           setGameOver(true);
           return prevSnake;
         }
-
-        // Self collision
         if (prevSnake.some(seg => seg.x === head.x && seg.y === head.y)) {
-          playKeyClickSound(220, 'sawtooth', 0.25);
+          playSound(180, 'sawtooth', 0.3);
           setGameOver(true);
           return prevSnake;
         }
 
         const newSnake = [head, ...prevSnake];
-
-        // Eat food
         if (head.x === food.x && head.y === food.y) {
-          playKeyClickSound(1200, 'sine', 0.08);
+          playSound(1400, 'sine', 0.1);
           setScore(s => {
             const next = s + 10;
             if (next > highScore) setHighScore(next);
             return next;
           });
           setFood({
-            x: Math.floor(Math.random() * 30) + 1,
-            y: Math.floor(Math.random() * 12) + 1
+            x: Math.floor(Math.random() * 38) + 1,
+            y: Math.floor(Math.random() * 16) + 1
           });
         } else {
           newSnake.pop();
         }
-
         return newSnake;
       });
-    }, 110);
-
+    }, 100);
     return () => clearInterval(interval);
-  }, [mode, direction, food, gameOver, highScore]);
+  }, [mode, nextDirection, food, gameOver, highScore, playSound]);
 
   const resetSnake = () => {
-    playKeyClickSound(600, 'square', 0.1);
-    setSnake([
-      { x: 12, y: 7 },
-      { x: 11, y: 7 },
-      { x: 10, y: 7 }
-    ]);
-    setFood({ x: 22, y: 5 });
+    playSound(600, 'square', 0.1);
+    setSnake([{ x: 15, y: 9 }, { x: 14, y: 9 }, { x: 13, y: 9 }]);
+    setFood({ x: 28, y: 6 });
     setDirection('RIGHT');
+    setNextDirection('RIGHT');
     setScore(0);
     setGameOver(false);
   };
 
-  // Character-by-Character Typewriter Streaming with Teletype Sound Effects!
-  const streamCommandOutput = (promptLine: string, linesToStream: string[]) => {
+  // Streaming typewriter for command output
+  const streamCommandOutput = useCallback((promptLine: string, linesToStream: string[]) => {
     setIsTypingOutput(true);
     setTerminalHistory(prev => [...prev, promptLine]);
-
     let lineIdx = 0;
-    const streamInterval = setInterval(() => {
+    const go = () => {
       if (lineIdx < linesToStream.length) {
-        const nextLine = linesToStream[lineIdx];
-        setTerminalHistory(prev => [...prev, nextLine]);
-        playKeyClickSound(700 + (lineIdx % 5) * 80, 'square', 0.035);
+        const ln = linesToStream[lineIdx];
+        setTerminalHistory(prev => [...prev, ln]);
+        playSound(680 + (lineIdx % 6) * 60, 'square', 0.03);
         lineIdx++;
+        setTimeout(go, 90);
       } else {
-        clearInterval(streamInterval);
         setIsTypingOutput(false);
       }
-    }, 120); // 120ms per line for clear, retro, deliberate teletype typing animation!
-  };
+    };
+    setTimeout(go, 80);
+  }, [playSound]);
 
-  const executeCommand = (cmdStr: string) => {
-    if (isTypingOutput) return; // Wait for active typing animation
+  const executeCommand = useCallback((cmdStr: string) => {
+    if (isTypingOutput) return;
     const cmd = cmdStr.trim().toUpperCase();
     setCommandInput('');
-
     const promptPrefix = mode === 'DOS' ? 'C:\\>' : 'COMMAND>';
     const promptLine = `${promptPrefix} ${cmdStr}`;
     const lines: string[] = [];
 
-    if (cmd === 'A' || cmd === 'ABOUT' || cmd === 'ABOUT ME') {
+    if (cmd === 'A' || cmd === 'ABOUT') {
       lines.push(
-        `=============================================================`,
-        `                [A] SYSOP PROFILE & ABOUT                    `,
-        `=============================================================`,
+        `╔══════════════════════════════════════════════════════════╗`,
+        `║              [A] SYSOP PROFILE & ABOUT                  ║`,
+        `╚══════════════════════════════════════════════════════════╝`,
         `NAME:     ${data.cv.name}`,
         `TITLE:    ${data.cv.title}`,
         `LOCATION: ${data.cv.location}`,
         `EMAIL:    ${data.cv.email}`,
         ``,
-        `BIO SUMMARY:`,
-        `${data.cv.about}`
+        `BIO:`,
+        ...data.cv.about.match(/.{1,60}/g) || [data.cv.about]
       );
       streamCommandOutput(promptLine, lines);
-    } else if (cmd === 'W' || cmd === 'WORK' || cmd === 'EXPERIENCE') {
-      lines.push(
-        `=============================================================`,
-        `           [W] WORK & EMPLOYMENT HISTORY                     `,
-        `=============================================================`
-      );
+    } else if (cmd === 'W' || cmd === 'WORK') {
+      lines.push(`╔══════════════════════════════════════════════════════════╗`, `║           [W] WORK & EMPLOYMENT HISTORY                  ║`, `╚══════════════════════════════════════════════════════════╝`);
       data.jobs.forEach(j => {
-        lines.push(`• ROLE: ${j.role}`);
-        lines.push(`  ORG:  ${j.org} (${j.period})`);
-        lines.push(`  DESC: ${j.desc}`);
-        lines.push(``);
+        lines.push(`• ${j.role}`, `  @ ${j.org} (${j.period})`, `  ${j.desc}`, ``);
       });
       streamCommandOutput(promptLine, lines);
     } else if (cmd === 'E' || cmd === 'EDU' || cmd === 'EDUCATION') {
-      lines.push(
-        `=============================================================`,
-        `                 [E] ACADEMIC EDUCATION                      `,
-        `=============================================================`
-      );
+      lines.push(`╔══════════════════════════════════════════════════════════╗`, `║               [E] ACADEMIC EDUCATION                    ║`, `╚══════════════════════════════════════════════════════════╝`);
       data.education.forEach(edu => {
-        lines.push(`• ${edu.school}`);
-        lines.push(`  DEGREE: ${edu.detail} (${edu.period})`);
-        lines.push(``);
+        lines.push(`• ${edu.school}`, `  ${edu.detail} (${edu.period})`, ``);
       });
       streamCommandOutput(promptLine, lines);
-    } else if (cmd === 'S' || cmd === 'SKILLS' || cmd === 'LANGUAGES') {
-      lines.push(
-        `=============================================================`,
-        `             [S] SKILLS & SYSTEM TECHNOLOGIES                `,
-        `=============================================================`,
-        data.skills.map(s => `[✓] ${s}`).join('   ')
-      );
+    } else if (cmd === 'S' || cmd === 'SKILLS') {
+      lines.push(`╔══════════════════════════════════════════════════════════╗`, `║           [S] SKILLS & SYSTEM TECHNOLOGIES               ║`, `╚══════════════════════════════════════════════════════════╝`);
+      data.skills.forEach(s => lines.push(`[✓] ${s}`));
       streamCommandOutput(promptLine, lines);
-    } else if (cmd === 'C' || cmd === 'CONTACT' || cmd === 'EMAIL') {
-      lines.push(
-        `=============================================================`,
-        `             [C] CONTACT & COMMUNICATION CHANNELS            `,
-        `=============================================================`,
-        `EMAIL:    ${data.cv.email}`,
-        `PHONE:    ${data.cv.phone}`,
-        `GITHUB:   ${data.social.github}`,
-        `LINKEDIN: ${data.cv.linkedinUrl}`,
-        `TWITTER:  ${data.social.twitter}`
-      );
+    } else if (cmd === 'C' || cmd === 'CONTACT') {
+      lines.push(`╔══════════════════════════════════════════════════════════╗`, `║         [C] CONTACT & COMMUNICATION CHANNELS            ║`, `╚══════════════════════════════════════════════════════════╝`,
+        `EMAIL:    ${data.cv.email}`, `PHONE:    ${data.cv.phone}`, `GITHUB:   ${data.social.github}`, `LINKEDIN: ${data.cv.linkedinUrl}`);
       streamCommandOutput(promptLine, lines);
-    } else if (cmd === 'P' || cmd === 'PROJECTS' || cmd === 'SHOWCASE') {
-      lines.push(
-        `=============================================================`,
-        `               [P] FEATURED PROJECTS SHOWCASE                `,
-        `=============================================================`
-      );
+    } else if (cmd === 'P' || cmd === 'PROJECTS') {
+      lines.push(`╔══════════════════════════════════════════════════════════╗`, `║             [P] FEATURED PROJECTS SHOWCASE              ║`, `╚══════════════════════════════════════════════════════════╝`);
       data.projects.forEach((p, idx) => {
-        lines.push(`[${idx + 1}] ${p.title.toUpperCase()}`);
-        lines.push(`    TAGLINE: ${p.tagline}`);
-        lines.push(`    DESC:    ${p.desc}`);
-        if (p.link) lines.push(`    URL:     ${p.link}`);
-        lines.push(``);
+        lines.push(`[${idx + 1}] ${p.title.toUpperCase()}`, `    ${p.tagline}`, `    ${p.desc.slice(0, 80)}...`, p.link ? `    URL: ${p.link}` : '', ``);
       });
       streamCommandOutput(promptLine, lines);
     } else if (cmd === 'X' || cmd === 'EXIT' || cmd === 'DOS') {
       setMode('DOS');
-      lines.push(
-        `Exiting BBS software... Loading MS-DOS 3.30 Prompt.`,
-        `Type DIR, HELP, CHANDRA, or GAME.`
-      );
-      streamCommandOutput(promptLine, lines);
-    } else if (cmd === 'CHANDRA' || cmd === 'CHANDRA.EXE' || cmd === 'BBS') {
+      streamCommandOutput(promptLine, [`Exiting BBS... Loading MS-DOS 3.30.`, `C:\\> Type DIR, HELP, CHANDRA, GAME`]);
+    } else if (cmd === 'CHANDRA' || cmd === 'BBS') {
       setMode('BBS');
-      lines.push(`Returning to SysOp Chandra Kiran Rudra's BBS Main Menu...`);
-      streamCommandOutput(promptLine, lines);
-    } else if (cmd === 'GAME' || cmd === 'SNAKE' || cmd === 'SNAKE.EXE' || cmd === 'B') {
+      streamCommandOutput(promptLine, [`Returning to SysOp BBS Main Menu...`]);
+    } else if (cmd === 'GAME' || cmd === 'SNAKE' || cmd === 'B') {
       resetSnake();
       setMode('SNAKE');
     } else if (cmd === 'DIR') {
-      lines.push(
-        ` Volume in drive C has no label`,
-        ` Directory of C:\\`,
-        ``,
+      lines.push(` Volume in drive C has no label`, ` Directory of C:\\`, ``,
         `AUTOEXEC BAT         128 01-15-86  12:00p`,
         `CHANDRA  EXE       45056 09-06-86   4:20p`,
         `SNAKE    EXE       16384 03-12-86   8:30a`,
         `README   TXT        1024 08-20-86   1:15p`,
-        `       4 File(s)    62592 bytes free`
-      );
+        `       4 File(s)    62592 bytes free`);
       streamCommandOutput(promptLine, lines);
     } else if (cmd === 'HELP') {
-      lines.push(
-        `AVAILABLE BBS / DOS COMMANDS:`,
-        `  ABOUT (A)      - View SysOp profile`,
-        `  WORK (W)       - Employment history`,
-        `  EDUCATION (E)  - Academic record`,
-        `  SKILLS (S)     - Technical competencies`,
-        `  CONTACT (C)    - Electronic mail & socials`,
-        `  PROJECTS (P)   - Portfolio showcase`,
-        `  GAME / SNAKE   - Play ASCII Snake Arcade Game`,
-        `  DIR            - List MS-DOS directory`,
-        `  CLS            - Clear output screen`,
-        `  EXIT (X)       - Switch between BBS and DOS modes`
-      );
+      lines.push(`AVAILABLE COMMANDS:`,
+        `  [A] ABOUT        - View SysOp profile & bio`,
+        `  [W] WORK         - Employment history`,
+        `  [E] EDUCATION    - Academic record`,
+        `  [S] SKILLS       - Technical competencies`,
+        `  [C] CONTACT      - Electronic mail & socials`,
+        `  [P] PROJECTS     - Portfolio showcase`,
+        `  [B] GAME/SNAKE   - Play ASCII Snake Arcade`,
+        `  DIR              - List MS-DOS directory`,
+        `  CLS              - Clear terminal screen`,
+        `  [X] EXIT         - Toggle BBS / DOS mode`);
       streamCommandOutput(promptLine, lines);
     } else if (cmd === 'CLS') {
       setTerminalHistory([]);
-    } else if (cmd === '') {
-      // Empty enter
-    } else {
-      lines.push(`Unrecognized command: "${cmdStr}". Type HELP or DIR.`);
-      streamCommandOutput(promptLine, lines);
+    } else if (cmd !== '') {
+      streamCommandOutput(promptLine, [`Bad command or file name: "${cmdStr}". Type HELP.`]);
     }
-  };
+  }, [isTypingOutput, mode, data, streamCommandOutput]);
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    executeCommand(commandInput);
+    if (commandInput.trim()) {
+      playSound(800, 'square', 0.02);
+      executeCommand(commandInput);
+    }
+  };
+
+  // Render snake grid
+  const renderSnakeGrid = () => {
+    const COLS = 40, ROWS = 18;
+    const cells = [];
+    for (let r = 0; r < ROWS; r++) {
+      const row = [];
+      for (let c = 0; c < COLS; c++) {
+        const isHead = snake[0].x === c && snake[0].y === r;
+        const isBody = snake.some((seg, i) => i > 0 && seg.x === c && seg.y === r);
+        const isFood = food.x === c && food.y === r;
+        let char = '·', cls = styles.cellEmpty;
+        if (isHead) { char = '◉'; cls = styles.cellHead; }
+        else if (isBody) { char = '█'; cls = styles.cellBody; }
+        else if (isFood) { char = '★'; cls = styles.cellFood; }
+        row.push(<span key={c} className={cls}>{char}</span>);
+      }
+      cells.push(<div key={r} className={styles.snakeRow}>{row}</div>);
+    }
+    return cells;
   };
 
   return (
     <section id="era-1986" className={styles.tvMonitorContainer} aria-label="1986 CRT TV Era">
-      {/* Wooden & Plastic Retro CRT TV Enclosure Cabinet */}
+      {/* Fixed power LED top-right */}
+      <div className={styles.powerGroup}>
+        <span>SOUND:{soundEnabled ? 'ON' : 'OFF'}</span>
+        <div className={`${styles.powerLed} ${(isConnected || isConnecting) ? styles.powerLedOn : ''}`} />
+      </div>
+
       <div className={styles.tvCabinet}>
-        {/* Brand Header Label & Power LED */}
-        <div className={styles.tvBrandLabel}>
-          <span>VINTAGE 1986 CRT PHOSPHOR MONITOR · MODEL BBS-86</span>
-          <div className={styles.powerGroup}>
-            <span style={{ fontSize: '13px' }}>POWER</span>
-            <div className={`${styles.powerLed} ${isConnected || isConnecting ? styles.powerLedOn : ''}`} />
-          </div>
-        </div>
-
-        {/* Curved Glass CRT Screen Display */}
+        {/* CRT Screen (now transparent full-page) */}
         <div className={styles.crtScreen}>
-          <div className={styles.scanlineOverlay} />
 
-          {/* Initial Pre-connect Startup TV State with CONNECT Button */}
-          {!isConnected && !isConnecting ? (
+          {/* PRE-CONNECT STATE */}
+          {!isConnected && !isConnecting && (
             <div className={styles.startupPreconnectBox}>
               <div className={styles.baudHeader}>
                 1200 BAUD · 8-N-1 · ANSI · DIAL: 1-800-CHANDRA
               </div>
+              <div className={styles.blinkingBlockLarge}>█</div>
               <h2 className={styles.startupTitle}>INITIALIZE CRT BBS TERMINAL</h2>
               <p className={styles.startupText}>
-                Welcome to SysOp {data.cv.name}&apos;s 1986 BBS System. Click the connect button below to turn on CRT display &amp; initiate dial-up teletype sequence.
+                Welcome to SysOp {data.cv.name}&apos;s 1986 BBS System.
+                <br />Click CONNECT to initiate dial-up teletype sequence.
               </p>
-              <button className={styles.connectBtn} onClick={handleConnect}>
+              <button className={styles.connectBtn} onClick={handleConnect} id="connect-btn-1986">
                 ► CONNECT
               </button>
             </div>
-          ) : isConnecting ? (
-            /* Teletype Typing Animation Sequence Screen */
+          )}
+
+          {/* CONNECTING / DIALING STATE */}
+          {isConnecting && (
             <div className={styles.typingLogContainer}>
               <div className={styles.typingLogHeader}>
-                📡 DIALING MODEM 1-800-CHANDRA... TELETYPE ANIMATION IN PROGRESS
+                📡 MODEM DIALING 1-800-CHANDRA... ESTABLISHING CONNECTION
               </div>
               <div className={styles.typingLogBox}>
                 {typedLines.map((line, idx) => (
-                  <div key={idx} className={styles.typingLine}>
-                    {line}
-                  </div>
+                  <div key={idx} className={styles.typingLine}>{line}</div>
                 ))}
                 <span className={styles.blinkingCursor}>█</span>
               </div>
             </div>
-          ) : (
-            /* Connected Terminal Body */
-            <div className={styles.terminalBodyContent}>
-              {/* Top Header Bar matching Pedro's BBS */}
+          )}
+
+          {/* CONNECTED TERMINAL */}
+          {isConnected && (
+            <div className={styles.terminalBodyContent} style={{ textAlign: 'left' }}>
+              {/* Top BBS Header Bar */}
               <div className={styles.topBbsHeader}>
                 <div className={styles.sysOpTitle}>
-                  CHANDRA&apos;S BBS // NODE 1 OF 1
+                  ┌─ {data.cv.name.toUpperCase()}&apos;S BBS // NODE 1 OF 1 ─────┐
                 </div>
-                <button
-                  className={styles.soundToggleBtn}
-                  onClick={() => setSoundEnabled(!soundEnabled)}
-                >
-                  SOUND: {soundEnabled ? 'ON' : 'OFF'}
-                </button>
+                <div className={styles.headerControls}>
+                  <button
+                    className={styles.soundToggleBtn}
+                    onClick={() => setSoundEnabled(s => !s)}
+                  >
+                    SND:{soundEnabled ? '●' : '○'}
+                  </button>
+                  <span className={styles.modeTag}>[{mode}]</span>
+                </div>
               </div>
 
-              {/* Connected Connection Teletype Log */}
+              {/* Connection log */}
               <div className={styles.connectionLogBox}>
-                <div>CONNECT 1200</div>
+                <div>CONNECT 1200 &nbsp;|&nbsp; 8-N-1 &nbsp;|&nbsp; ANSI</div>
                 <div>Welcome, GUEST. You are caller #002,481.</div>
-                <div>SysOp: {data.cv.name.toUpperCase()}</div>
+                <div>SysOp: <span style={{ color: '#ffff00' }}>{data.cv.name.toUpperCase()}</span></div>
                 <div>Last on: 14 JUN 1986  11:47 PM</div>
                 <div className={styles.quoteLine}>&gt;&gt; &quot;This is not a portfolio. It&apos;s a time machine.&quot;</div>
-                <div className={styles.readyLine}>&gt; SYSTEM READY. Type HELP or DIR and press ENTER.</div>
+                <div className={styles.readyLine}>&gt; SYSTEM READY. Type HELP or click a menu item below.</div>
               </div>
 
-              {/* SNAKE GAME IN LARGE DIALOGUE BOX CONTAINER */}
-              {mode === 'SNAKE' ? (
+              {/* SNAKE MODE */}
+              {mode === 'SNAKE' && (
                 <div className={styles.snakeDialogueBox}>
                   <div className={styles.snakeHeaderBar}>
-                    <span className={styles.snakeTitle}>🕹️ RETRO ASCII SNAKE ARCADE (1986)</span>
+                    <span className={styles.snakeTitle}>🕹 RETRO ASCII SNAKE (1986)</span>
                     <div>
-                      <span className={styles.snakeScore}>SCORE: {score}</span>
-                      <span className={styles.snakeHighScore}>HIGH: {highScore}</span>
+                      <span className={styles.snakeScore}>SCR:{score}</span>
+                      <span className={styles.snakeHighScore}> HI:{highScore}</span>
                     </div>
                   </div>
-
                   <div className={styles.snakeBoardCanvas}>
-                    {Array.from({ length: 14 }).map((_, r) => (
-                      <div key={r} className={styles.snakeRow}>
-                        {Array.from({ length: 32 }).map((_, c) => {
-                          const isHead = snake[0].x === c && snake[0].y === r;
-                          const isBody = snake.some((seg, idx) => idx > 0 && seg.x === c && seg.y === r);
-                          const isFood = food.x === c && food.y === r;
-
-                          let char = '·';
-                          let charClass = styles.cellEmpty;
-                          if (isHead) { char = 'O'; charClass = styles.cellHead; }
-                          else if (isBody) { char = 'o'; charClass = styles.cellBody; }
-                          else if (isFood) { char = '*'; charClass = styles.cellFood; }
-
-                          return (
-                            <span key={c} className={charClass}>
-                              {char}
-                            </span>
-                          );
-                        })}
-                      </div>
-                    ))}
+                    {renderSnakeGrid()}
                   </div>
-
                   {gameOver ? (
                     <div className={styles.gameOverOverlay}>
-                      <h2>=== GAME OVER ===</h2>
-                      <p>FINAL SCORE: {score}</p>
+                      <div className={styles.gameOverTitle}>═══ GAME OVER ═══</div>
+                      <div>SCORE: {score} &nbsp;|&nbsp; HIGH: {highScore}</div>
                       <div className={styles.snakeBtnRow}>
-                        <button className={styles.snakeActionBtn} onClick={resetSnake}>
-                          🎮 RESTART GAME
-                        </button>
-                        <button className={styles.snakeActionBtn} onClick={() => setMode('BBS')}>
-                          ◄ RETURN TO BBS MENU
-                        </button>
+                        <button className={styles.snakeActionBtn} onClick={resetSnake}>▶ RESTART</button>
+                        <button className={styles.snakeActionBtn} onClick={() => setMode('BBS')}>◄ BBS MENU</button>
                       </div>
                     </div>
                   ) : (
                     <div className={styles.snakeFooterControls}>
                       <div className={styles.dpadControls}>
-                        <button type="button" onClick={() => direction !== 'DOWN' && setDirection('UP')}>▲ UP</button>
+                        <button type="button" onClick={() => nextDirection !== 'DOWN' && setNextDirection('UP')}>▲</button>
                         <div className={styles.dpadRow}>
-                          <button type="button" onClick={() => direction !== 'RIGHT' && setDirection('LEFT')}>◄ LEFT</button>
-                          <button type="button" onClick={() => direction !== 'LEFT' && setDirection('RIGHT')}>RIGHT ►</button>
+                          <button type="button" onClick={() => nextDirection !== 'RIGHT' && setNextDirection('LEFT')}>◄</button>
+                          <button type="button" onClick={() => nextDirection !== 'LEFT' && setNextDirection('RIGHT')}>►</button>
                         </div>
-                        <button type="button" onClick={() => direction !== 'UP' && setDirection('DOWN')}>▼ DOWN</button>
+                        <button type="button" onClick={() => nextDirection !== 'UP' && setNextDirection('DOWN')}>▼</button>
                       </div>
-                      <button className={styles.exitSnakeBtn} onClick={() => setMode('BBS')}>
-                        RETURN TO BBS MENU [ESC]
-                      </button>
+                      <div className={styles.snakeHints}>
+                        <div>WASD / ARROWS to move</div>
+                        <div>Eat ★ to grow</div>
+                        <button className={styles.exitSnakeBtn} onClick={() => setMode('BBS')}>
+                          [ESC] BACK TO BBS
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
-              ) : (
-                /* Pedro's BBS Main Menu Box */
-                mode === 'BBS' && (
-                  <div className={styles.asciiMenuBox}>
-                    <div className={styles.asciiMenuHeader}>
-                      ┌─────────────────────────────────────────────────────────────────────────────┐<br />
-                      │                               [ MAIN MENU ]                                 │<br />
-                      ├─────────────────────────────────────────────────────────────────────────────┤
-                    </div>
-                    <div className={styles.asciiMenuOptions}>
-                      <div className={styles.menuLine} onClick={() => executeCommand('A')}>
-                        <span className={styles.keyTag}>[A] ... About Me</span>
-                      </div>
-                      <div className={styles.menuLine} onClick={() => executeCommand('W')}>
-                        <span className={styles.keyTag}>[W] ... Work / Employment History</span>
-                      </div>
-                      <div className={styles.menuLine} onClick={() => executeCommand('E')}>
-                        <span className={styles.keyTag}>[E] ... Education</span>
-                      </div>
-                      <div className={styles.menuLine} onClick={() => executeCommand('S')}>
-                        <span className={styles.keyTag}>[S] ... Skills &amp; Languages</span>
-                      </div>
-                      <div className={styles.menuLine} onClick={() => executeCommand('C')}>
-                        <span className={styles.keyTag}>[C] ... Contact / Electronic Mail</span>
-                      </div>
-                      <div className={styles.menuLine} onClick={() => executeCommand('P')}>
-                        <span className={styles.keyTag}>[P] ... Projects Showcase</span>
-                      </div>
-                      <div className={styles.menuLine} onClick={() => executeCommand('GAME')}>
-                        <span className={styles.keyTag} style={{ color: '#ffff00' }}>[B] ... Play Snake Arcade Game</span>
-                      </div>
-                      <div className={styles.menuLine} onClick={() => executeCommand('X')}>
-                        <span className={styles.keyTag}>[X] ... Exit to DOS</span>
-                      </div>
-                    </div>
-                    <div className={styles.asciiMenuFooter}>
-                      └─────────────────────────────────────────────────────────────────────────────┘
-                    </div>
-                  </div>
-                )
               )}
 
-              {/* Line Output Terminal History with Streaming Typewriter Animation & Sound Beeps */}
+              {/* BBS MAIN MENU */}
+              {mode === 'BBS' && (
+                <div className={styles.asciiMenuBox}>
+                  <div className={styles.asciiMenuHeader}>
+                    ┌──────────────────────────────────────────────────────────────────┐<br />
+                    │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[ MAIN MENU ]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│<br />
+                    ├──────────────────────────────────────────────────────────────────┤
+                  </div>
+                  <div className={styles.asciiMenuOptions}>
+                    {[
+                      { key: 'A', label: 'About Me', cmd: 'A' },
+                      { key: 'W', label: 'Work / Employment History', cmd: 'W' },
+                      { key: 'E', label: 'Education', cmd: 'E' },
+                      { key: 'S', label: 'Skills & Technologies', cmd: 'S' },
+                      { key: 'C', label: 'Contact / Electronic Mail', cmd: 'C' },
+                      { key: 'P', label: 'Projects Showcase', cmd: 'P' },
+                    ].map(item => (
+                      <div key={item.key} className={styles.menuLine} onClick={() => executeCommand(item.cmd)}>
+                        <span className={styles.menuKey}>[{item.key}]</span>
+                        <span className={styles.menuDots}> ... </span>
+                        <span className={styles.menuLabel}>{item.label}</span>
+                      </div>
+                    ))}
+                    <div className={styles.menuLine} style={{ borderTop: '1px dashed #004400', marginTop: '4px', paddingTop: '6px' }} onClick={() => { resetSnake(); setMode('SNAKE'); }}>
+                      <span className={styles.menuKey} style={{ color: '#ffff00' }}>[B]</span>
+                      <span className={styles.menuDots}> ... </span>
+                      <span className={styles.menuLabel} style={{ color: '#ffff00' }}>Play Snake Arcade Game</span>
+                    </div>
+                    <div className={styles.menuLine} onClick={() => executeCommand('X')}>
+                      <span className={styles.menuKey}>[X]</span>
+                      <span className={styles.menuDots}> ... </span>
+                      <span className={styles.menuLabel}>Exit to MS-DOS Prompt</span>
+                    </div>
+                  </div>
+                  <div className={styles.asciiMenuFooter}>
+                    └──────────────────────────────────────────────────────────────────┘
+                  </div>
+                </div>
+              )}
+
+              {/* DOS MODE indicator */}
+              {mode === 'DOS' && (
+                <div className={styles.dosPromptLabel}>
+                  MS-DOS Version 3.30 &nbsp; Copyright 1981-1986 Microsoft Corp.
+                  <br />
+                  <span style={{ color: '#88ff88', fontSize: '13px' }}>Type CHANDRA to return to BBS. Type GAME for Snake. Type DIR or HELP.</span>
+                </div>
+              )}
+
+              {/* Terminal Output History */}
               {terminalHistory.length > 0 && (
                 <div className={styles.outputConsoleLog}>
                   {terminalHistory.map((line, i) => (
@@ -548,11 +495,11 @@ export const Era1986: React.FC<Era1986Props> = ({ data, onNextEra }) => {
                 </div>
               )}
 
-              {/* COMMAND Prompt Form Input */}
+              {/* Command Input */}
               <form onSubmit={handleFormSubmit} className={styles.commandForm}>
-                <div className={styles.promptLabel}>
+                <span className={styles.promptLabel}>
                   {mode === 'DOS' ? 'C:\\>' : 'COMMAND>'}
-                </div>
+                </span>
                 <input
                   ref={inputRef}
                   type="text"
@@ -560,47 +507,40 @@ export const Era1986: React.FC<Era1986Props> = ({ data, onNextEra }) => {
                   value={commandInput}
                   onChange={e => {
                     setCommandInput(e.target.value);
-                    playKeyClickSound(800, 'square', 0.02);
+                    playSound(820, 'square', 0.015);
                   }}
-                  placeholder={mode === 'DOS' ? 'Type DIR, HELP, CHANDRA, GAME...' : 'Type A, W, E, S, C, P, GAME, EXIT...'}
+                  placeholder={mode === 'DOS' ? 'DIR, HELP, CHANDRA, GAME...' : 'A, W, E, S, C, P, GAME, EXIT...'}
                   disabled={isTypingOutput}
                   autoFocus
+                  autoComplete="off"
+                  spellCheck={false}
                 />
                 <span className={styles.blinkingCursor}>█</span>
               </form>
 
               {/* Quick Command Hints */}
               <div className={styles.quickCommandHints}>
-                <span style={{ color: '#00ff00', fontWeight: 'bold' }}>Type:</span>
-                <button type="button" onClick={() => executeCommand('ABOUT')}>ABOUT</button> :
-                <button type="button" onClick={() => executeCommand('WORK')}>WORK</button> :
-                <button type="button" onClick={() => executeCommand('EDUCATION')}>EDUCATION</button> :
-                <button type="button" onClick={() => executeCommand('SKILLS')}>SKILLS</button> :
-                <button type="button" onClick={() => executeCommand('CONTACT')}>CONTACT</button> :
-                <button type="button" onClick={() => executeCommand('PROJECTS')}>PROJECTS</button> :
-                <button type="button" onClick={() => executeCommand('GAME')}>GAME</button> :
+                {['ABOUT', 'WORK', 'EDUCATION', 'SKILLS', 'CONTACT', 'PROJECTS', 'GAME'].map(cmd => (
+                  <button key={cmd} type="button" onClick={() => executeCommand(cmd)}>{cmd}</button>
+                ))}
                 <button type="button" onClick={() => executeCommand(mode === 'DOS' ? 'CHANDRA' : 'EXIT')}>
-                  {mode === 'DOS' ? 'BBS' : 'EXIT'}
+                  {mode === 'DOS' ? '↩ BBS' : '↩ DOS'}
                 </button>
               </div>
             </div>
           )}
 
-          {/* Bottom Navigation GO 1996 Box */}
-          <div className={styles.bottomNextEraBox}>
-            <button
-              className={styles.nextEraBtn}
-              onClick={() => {
-                if (onNextEra) {
-                  onNextEra();
-                } else {
-                  window.location.hash = '1996';
-                }
-              }}
-            >
-              [ GO 1996 ]
-            </button>
-          </div>
+          {/* Bottom Navigation → 1996 */}
+          {isConnected && (
+            <div className={styles.bottomNextEraBox}>
+              <button
+                className={styles.nextEraBtn}
+                onClick={() => onNextEra ? onNextEra() : (window.location.hash = '1996')}
+              >
+                [ JUMP TO 1996 → ]
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </section>

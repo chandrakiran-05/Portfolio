@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import styles from './TopDecadeBar.module.css';
 
 export type Era = '1986' | '1996' | '2016' | '2026' | '2036' | '2046';
@@ -11,72 +11,82 @@ interface TopDecadeBarProps {
 export const TopDecadeBar: React.FC<TopDecadeBarProps> = ({ activeEra, onSelectEra }) => {
   const [isVisible, setIsVisible] = useState(true);
   const eras: Era[] = ['1986', '1996', '2016', '2026', '2036', '2046'];
+  const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const barRef = useRef<HTMLElement>(null);
+  const isHovered = useRef(false);
 
   useEffect(() => {
-    let hideTimer: ReturnType<typeof setTimeout>;
-
     const startTimer = () => {
-      clearTimeout(hideTimer);
-      hideTimer = setTimeout(() => {
-        setIsVisible(false);
+      if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+      hideTimerRef.current = setTimeout(() => {
+        if (!isHovered.current) {
+          setIsVisible(false);
+        }
       }, 2500);
     };
 
+    // Store it on the window object or a ref so we can call it from onMouseLeave
+    (window as any).__startTopBarTimer = startTimer;
+
+    startTimer();
+
     const handleMouseMove = (e: MouseEvent) => {
-      // Show if cursor is within top 120px of viewport or near top bar
-      if (e.clientY < 120) {
+      if (e.clientY < 80 || isHovered.current) {
         setIsVisible(true);
-        startTimer();
-      } else {
-        // If cursor moves away, start hide timer
         startTimer();
       }
     };
 
-    // Show initially
-    setIsVisible(true);
-    startTimer();
-
     window.addEventListener('mousemove', handleMouseMove);
     return () => {
-      clearTimeout(hideTimer);
       window.removeEventListener('mousemove', handleMouseMove);
+      if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
     };
   }, []);
 
-  const getClassForEra = (era: Era) => {
-    if (activeEra !== era) return styles.yearButton;
-    switch (era) {
-      case '1986':
-        return `${styles.yearButton} ${styles.active1986}`;
-      case '1996':
-        return `${styles.yearButton} ${styles.active1996}`;
-      case '2016':
-        return `${styles.yearButton} ${styles.active2016}`;
-      case '2026':
-        return `${styles.yearButton} ${styles.active2026}`;
-      case '2036':
-        return `${styles.yearButton} ${styles.active2036}`;
-      case '2046':
-        return `${styles.yearButton} ${styles.active2046}`;
-    }
+  const getEraClass = (era: Era) => {
+    const base = styles.yearButton;
+    if (activeEra !== era) return base;
+    const activeMap: Record<Era, string> = {
+      '1986': styles.active1986,
+      '1996': styles.active1996,
+      '2016': styles.active2016,
+      '2026': styles.active2026,
+      '2036': styles.active2036,
+      '2046': styles.active2046,
+    };
+    return `${base} ${activeMap[era]}`;
   };
 
   return (
     <nav
+      ref={barRef}
       className={`${styles.topBarWrapper} ${isVisible ? styles.visible : styles.hidden}`}
       aria-label="Top Decade Time Machine Selector"
-      onMouseEnter={() => setIsVisible(true)}
+      onMouseEnter={() => {
+        isHovered.current = true;
+        setIsVisible(true);
+      }}
+      onMouseLeave={() => {
+        isHovered.current = false;
+        if ((window as any).__startTopBarTimer) {
+          (window as any).__startTopBarTimer();
+        }
+      }}
     >
-      {eras.map((era) => (
-        <button
-          key={era}
-          className={getClassForEra(era)}
-          onClick={() => onSelectEra(era)}
-          title={`Jump to ${era} Era`}
-        >
-          {era}
-        </button>
+      <div className={styles.peekTab}>TIMEBAR ▼</div>
+      {eras.map((era, idx) => (
+        <React.Fragment key={era}>
+          <button
+            className={getEraClass(era)}
+            onClick={() => onSelectEra(era)}
+            title={`Jump to ${era} Era`}
+            aria-pressed={activeEra === era}
+          >
+            {era}
+          </button>
+          {idx < eras.length - 1 && <div className={styles.separator} />}
+        </React.Fragment>
       ))}
     </nav>
   );

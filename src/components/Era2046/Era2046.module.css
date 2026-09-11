@@ -1,76 +1,151 @@
-@keyframes cinematicRise {
-  0% { opacity: 0; transform: translateY(30px); }
-  100% { opacity: 1; transform: translateY(0); }
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;800;900&family=Rajdhani:wght@600;700&display=swap');
+
+/* ─── Apple-style word reveal keyframe ─── */
+@keyframes wordReveal {
+  0% {
+    opacity: 0;
+    transform: translateY(22px);
+    filter: blur(10px);
+  }
+  60% {
+    opacity: 0.8;
+    filter: blur(2px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
 }
 
-@keyframes starFloat {
-  0% { background-position: 0 0; }
-  100% { background-position: 500px 500px; }
+@keyframes errorCodeReveal {
+  from {
+    opacity: 0;
+    letter-spacing: 8px;
+  }
+  to {
+    opacity: 1;
+    letter-spacing: 4px;
+  }
 }
 
+/* ─── Page Container — WHITE minimal ─── */
 .discontinuedContainer {
-  background: #000000;
-  background-image: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
-  background-size: 40px 40px;
-  animation: starFloat 60s infinite linear;
-  color: #ffffff;
-  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #f1f2f4;
+  color: #0a0a0a;
+  font-family: 'Inter', system-ui, sans-serif;
   min-height: 100vh;
-  padding: 100px 20px 80px 20px;
+  padding: 80px 40px 120px;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   box-sizing: border-box;
-  text-align: center;
   position: relative;
+  overflow: hidden;
+}
+
+/* Subtle noise */
+.discontinuedContainer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.025'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
 }
 
 .innerWrapper {
-  max-width: 800px;
+  max-width: 860px;
   width: 100%;
+  position: relative;
+  z-index: 2;
+  padding-left: clamp(20px, 5vw, 80px);
 }
 
+/* ─── Reveal word span ─── */
+.revealWord {
+  display: inline-block;
+  opacity: 0;
+  animation: wordReveal 0.75s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  will-change: opacity, transform, filter;
+}
+
+/* ─── Error code ─── */
+.errorCode {
+  font-family: 'Rajdhani', monospace;
+  font-size: 11px;
+  color: #aaa;
+  letter-spacing: 4px;
+  margin-bottom: 52px;
+  text-transform: uppercase;
+}
+
+/* ─── Main Title ─── */
 .cinematicTitle {
-  font-size: 38px;
+  font-size: clamp(34px, 5.5vw, 62px);
   font-weight: 800;
-  color: #ffffff;
-  letter-spacing: -0.5px;
-  margin: 0 0 20px 0;
-  line-height: 1.4;
-  animation: cinematicRise 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+  color: #0a0a0a;
+  letter-spacing: -1.5px;
+  line-height: 1.2;
+  margin: 0 0 32px 0;
 }
 
+.titleLine {
+  display: block;
+  overflow: visible;
+}
+
+/* ─── Sub text ─── */
 .cinematicSub {
-  font-size: 22px;
-  color: #94a3b8;
+  font-size: clamp(17px, 2.2vw, 22px);
+  color: #555;
   font-weight: 400;
-  margin-bottom: 30px;
-  animation: cinematicRise 2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  animation-delay: 0.4s;
-  opacity: 0;
+  line-height: 1.7;
+  margin-bottom: 28px;
 }
 
-.cinematicCode {
-  font-family: 'Fira Code', monospace;
-  font-size: 13px;
-  color: #64748b;
-  letter-spacing: 2px;
-  margin-top: 30px;
-  animation: cinematicRise 2.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  animation-delay: 0.8s;
-  opacity: 0;
+.cinematicSubSmall {
+  font-size: 15px;
+  color: #888;
+  display: block;
+  margin-top: 12px;
 }
 
+/* Ghost strikethrough barely visible */
+.glitchLine {
+  font-size: clamp(12px, 1.5vw, 15px);
+  color: transparent;
+  -webkit-text-stroke: 0.5px rgba(0,0,0,0.1);
+  letter-spacing: 0.3px;
+  text-decoration: line-through;
+  font-family: 'Rajdhani', monospace;
+  line-height: 1.6;
+}
+
+/* ─── Footer ─── */
 .disclaimerFooter {
   position: absolute;
   bottom: 30px;
   left: 50%;
   transform: translateX(-50%);
   width: 90%;
-  max-width: 700px;
+  max-width: 820px;
+  text-align: center;
   font-size: 11px;
-  color: #64748b;
-  line-height: 1.6;
+  color: #aaa;
+  line-height: 1.7;
+  z-index: 2;
+  font-family: 'Rajdhani', monospace;
+  letter-spacing: 0.8px;
+}
+
+/* Hidden elements from old approach */
+.starField, .starField2 { display: none; }
+
+@media (max-width: 600px) {
+  .discontinuedContainer { padding: 60px 20px 100px; }
+  .innerWrapper { padding-left: 0; }
+  .cinematicTitle { font-size: 30px; letter-spacing: -1px; }
+  .cinematicSub { font-size: 16px; }
 }
