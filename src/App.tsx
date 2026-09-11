@@ -14,9 +14,9 @@ import styles from './App.module.css';
 const typedCvData = cvJson as unknown as CVData;
 
 export const App: React.FC = () => {
-  const [activeEra, setActiveEra] = useState<Era>('1996');
+  const [activeEra, setActiveEra] = useState<Era>('1986');
   const [isWarping, setIsWarping] = useState(false);
-  const [warpTargetEra, setWarpTargetEra] = useState<Era>('1996');
+  const [warpTargetEra, setWarpTargetEra] = useState<Era>('1986');
 
   // Sync hash routing on load
   useEffect(() => {
